@@ -1,8 +1,8 @@
 const SearchBar = () => {
   return (
-    <section className="w-full py-10 px-6 bg-white">
-      <div className="max-w-[1200px] mx-auto flex gap-4 items-end">
-        <div className="flex-1 flex flex-col gap-2">
+    <section className="w-full py-6 sm:py-10 px-4 sm:px-6 bg-white">
+      <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row gap-4 items-end">
+        <div className="flex-1 flex flex-col gap-2 w-full sm:w-auto">
           <label className="text-sm font-medium text-holidaze-gray">
             Location
           </label>
@@ -12,7 +12,7 @@ const SearchBar = () => {
             className="py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full placeholder:text-holidaze-lighter-gray"
           />
         </div>
-        <div className="flex-1 flex flex-col gap-2">
+        <div className="flex-1 flex flex-col gap-2 w-full sm:w-auto">
           <label className="text-sm font-medium text-holidaze-gray">
             Check-in
           </label>
@@ -22,7 +22,7 @@ const SearchBar = () => {
             className="py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full placeholder:text-holidaze-lighter-gray"
           />
         </div>
-        <div className="flex-1 flex flex-col gap-2">
+        <div className="flex-1 flex flex-col gap-2 w-full sm:w-auto">
           <label className="text-sm font-medium text-holidaze-gray">
             Check-out
           </label>
@@ -32,7 +32,7 @@ const SearchBar = () => {
             className="py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full placeholder:text-holidaze-lighter-gray"
           />
         </div>
-        <div className="flex-1 flex flex-col gap-2">
+        <div className="flex-1 flex flex-col gap-2 w-full sm:w-auto">
           <label className="text-sm font-medium text-holidaze-gray">
             Guests
           </label>
@@ -52,7 +52,7 @@ const SearchBar = () => {
             </select>
           </div>
         </div>
-        <button className="py-3 px-6 bg-black text-white border-none rounded text-base font-medium cursor-pointer flex items-center gap-2 transition-colors h-fit hover:bg-holidaze-gray">
+        <button className="py-3 px-6 bg-black text-white border-none rounded text-sm sm:text-base font-medium cursor-pointer flex items-center justify-center gap-2 transition-colors w-full sm:w-auto hover:bg-holidaze-gray">
           <span className="text-base">🔍</span>
           Search
         </button>

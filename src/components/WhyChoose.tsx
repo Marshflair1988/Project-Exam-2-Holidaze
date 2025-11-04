@@ -21,17 +21,17 @@ const features = [
 
 const WhyChoose = () => {
   return (
-    <section className="w-full py-20 px-6 bg-white">
+    <section className="w-full py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white">
       <div className="max-w-[1200px] mx-auto">
-        <div className="text-center mb-[60px]">
-          <h2 className="text-4xl font-bold text-holidaze-gray m-0 tracking-tight">
+        <div className="text-center mb-10 sm:mb-12 lg:mb-[60px]">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-holidaze-gray m-0 tracking-tight">
             Why Choose Holidaze?
           </h2>
-          <p className="text-lg text-holidaze-light-gray mt-3">
+          <p className="text-base sm:text-lg text-holidaze-light-gray mt-2 sm:mt-3">
             Experience the best in accommodation booking
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
           {features.map((feature, index) => (
             <div
               key={index}
