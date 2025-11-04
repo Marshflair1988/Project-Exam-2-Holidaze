@@ -1,18 +1,18 @@
 const features = [
   {
-    icon: '🔒',
+    icon: '🔒', /*Icon from https://emojipedia.org/*/
     title: 'Secure Booking',
     description:
       'Your payments and personal information are always protected with our secure booking system.',
   },
   {
-    icon: '🎧',
+    icon: '🎧', /*Icon from https://emojipedia.org/*/
     title: '24/7 Support',
     description:
-      'Get help whenever you need it with our round-the-clock customer support team.',
+      'Get help whenever you need it with our round the clock customer support team.',
   },
   {
-    icon: '⭐',
+    icon: '⭐', /*Icon from https://emojipedia.org/*/
     title: 'Verified Reviews',
     description:
       'Read authentic reviews from real guests to make informed booking decisions.',

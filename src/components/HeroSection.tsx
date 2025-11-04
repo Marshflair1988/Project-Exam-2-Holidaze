@@ -1,4 +1,22 @@
+import { useState } from 'react';
+import VenueManagerRegisterModal from './VenueManagerRegisterModal';
+import VenueManagerLoginModal from './VenueManagerLoginModal';
+
 const HeroSection = () => {
+  const [isVenueManagerRegisterOpen, setIsVenueManagerRegisterOpen] =
+    useState(false);
+  const [isVenueManagerLoginOpen, setIsVenueManagerLoginOpen] = useState(false);
+
+  const switchToVenueManagerRegister = () => {
+    setIsVenueManagerLoginOpen(false);
+    setIsVenueManagerRegisterOpen(true);
+  };
+
+  const switchToVenueManagerLogin = () => {
+    setIsVenueManagerRegisterOpen(false);
+    setIsVenueManagerLoginOpen(true);
+  };
+
   return (
     <section className="w-full py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white">
       <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-8 lg:gap-[60px] items-center">
@@ -14,7 +32,9 @@ const HeroSection = () => {
             <button className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all bg-black text-white border-none hover:bg-holidaze-gray w-full sm:w-auto text-center">
               Browse Venues
             </button>
-            <button className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100 w-full sm:w-auto text-center">
+            <button
+              onClick={() => setIsVenueManagerRegisterOpen(true)}
+              className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100 w-full sm:w-auto text-center">
               Become a Host
             </button>
           </div>
@@ -30,6 +50,18 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <VenueManagerRegisterModal
+        isOpen={isVenueManagerRegisterOpen}
+        onClose={() => setIsVenueManagerRegisterOpen(false)}
+        onSwitchToLogin={switchToVenueManagerLogin}
+      />
+      <VenueManagerLoginModal
+        isOpen={isVenueManagerLoginOpen}
+        onClose={() => setIsVenueManagerLoginOpen(false)}
+        onSwitchToRegister={switchToVenueManagerRegister}
+      />
     </section>
   );
 };

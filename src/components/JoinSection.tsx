@@ -1,4 +1,35 @@
+import { useState } from 'react';
+import UserRegisterModal from './UserRegisterModal';
+import VenueManagerRegisterModal from './VenueManagerRegisterModal';
+import UserLoginModal from './UserLoginModal';
+import VenueManagerLoginModal from './VenueManagerLoginModal';
+
 const JoinSection = () => {
+  const [isUserRegisterOpen, setIsUserRegisterOpen] = useState(false);
+  const [isVenueManagerRegisterOpen, setIsVenueManagerRegisterOpen] =
+    useState(false);
+  const [isUserLoginOpen, setIsUserLoginOpen] = useState(false);
+  const [isVenueManagerLoginOpen, setIsVenueManagerLoginOpen] = useState(false);
+
+  const switchToUserRegister = () => {
+    setIsUserLoginOpen(false);
+    setIsUserRegisterOpen(true);
+  };
+
+  const switchToUserLogin = () => {
+    setIsUserRegisterOpen(false);
+    setIsUserLoginOpen(true);
+  };
+
+  const switchToVenueManagerRegister = () => {
+    setIsVenueManagerLoginOpen(false);
+    setIsVenueManagerRegisterOpen(true);
+  };
+
+  const switchToVenueManagerLogin = () => {
+    setIsVenueManagerRegisterOpen(false);
+    setIsVenueManagerLoginOpen(true);
+  };
   return (
     <section className="w-full py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-[#e5e7eb4c]">
       <div className="max-w-[1200px] mx-auto">
@@ -7,7 +38,7 @@ const JoinSection = () => {
             Join Holidaze
           </h2>
           <p className="text-base sm:text-lg text-holidaze-light-gray mt-2 sm:mt-3">
-            Whether you're looking to book or host, we have you covered
+            Whether you're looking to book or host, we have you covered!
           </p>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
@@ -36,7 +67,9 @@ const JoinSection = () => {
                 Manage bookings
               </li>
             </ul>
-            <button className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none w-full mt-2 bg-black text-white hover:bg-holidaze-gray">
+            <button
+              onClick={() => setIsUserRegisterOpen(true)}
+              className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none w-full mt-2 bg-black text-white hover:bg-holidaze-gray">
               Sign Up as Customer
             </button>
           </div>
@@ -65,12 +98,52 @@ const JoinSection = () => {
                 Update availability
               </li>
             </ul>
-            <button className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all w-full mt-2 bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100">
+            <button
+              onClick={() => setIsVenueManagerRegisterOpen(true)}
+              className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all w-full mt-2 bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100">
               Sign Up as Venue Manager
             </button>
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <UserRegisterModal
+        isOpen={isUserRegisterOpen}
+        onClose={() => setIsUserRegisterOpen(false)}
+        onSwitchToLogin={switchToUserLogin}
+        onSwitchToVenueManager={() => {
+          setIsUserRegisterOpen(false);
+          setIsVenueManagerRegisterOpen(true);
+        }}
+      />
+      <VenueManagerRegisterModal
+        isOpen={isVenueManagerRegisterOpen}
+        onClose={() => setIsVenueManagerRegisterOpen(false)}
+        onSwitchToLogin={switchToVenueManagerLogin}
+        onSwitchToUser={() => {
+          setIsVenueManagerRegisterOpen(false);
+          setIsUserRegisterOpen(true);
+        }}
+      />
+      <UserLoginModal
+        isOpen={isUserLoginOpen}
+        onClose={() => setIsUserLoginOpen(false)}
+        onSwitchToRegister={switchToUserRegister}
+        onSwitchToVenueManager={() => {
+          setIsUserLoginOpen(false);
+          setIsVenueManagerLoginOpen(true);
+        }}
+      />
+      <VenueManagerLoginModal
+        isOpen={isVenueManagerLoginOpen}
+        onClose={() => setIsVenueManagerLoginOpen(false)}
+        onSwitchToRegister={switchToVenueManagerRegister}
+        onSwitchToUser={() => {
+          setIsVenueManagerLoginOpen(false);
+          setIsUserLoginOpen(true);
+        }}
+      />
     </section>
   );
 };

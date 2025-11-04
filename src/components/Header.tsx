@@ -1,10 +1,40 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import UserLoginModal from './UserLoginModal';
+import UserRegisterModal from './UserRegisterModal';
+import VenueManagerLoginModal from './VenueManagerLoginModal';
+import VenueManagerRegisterModal from './VenueManagerRegisterModal';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserLoginOpen, setIsUserLoginOpen] = useState(false);
+  const [isUserRegisterOpen, setIsUserRegisterOpen] = useState(false);
+  const [isVenueManagerLoginOpen, setIsVenueManagerLoginOpen] = useState(false);
+  const [isVenueManagerRegisterOpen, setIsVenueManagerRegisterOpen] =
+    useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const switchToUserRegister = () => {
+    setIsUserLoginOpen(false);
+    setIsUserRegisterOpen(true);
+  };
+
+  const switchToUserLogin = () => {
+    setIsUserRegisterOpen(false);
+    setIsUserLoginOpen(true);
+  };
+
+  const switchToVenueManagerRegister = () => {
+    setIsVenueManagerLoginOpen(false);
+    setIsVenueManagerRegisterOpen(true);
+  };
+
+  const switchToVenueManagerLogin = () => {
+    setIsVenueManagerRegisterOpen(false);
+    setIsVenueManagerLoginOpen(true);
   };
 
   return (
@@ -12,9 +42,11 @@ const Header = () => {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 sm:py-5">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <h1 className="text-xl sm:text-2xl font-semibold text-holidaze-gray tracking-tight">
+          <Link
+            to="/"
+            className="text-xl sm:text-2xl font-semibold text-holidaze-gray tracking-tight no-underline hover:text-black transition-colors">
             Holidaze
-          </h1>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
@@ -47,20 +79,28 @@ const Header = () => {
                 🔍
               </span>
             </div>
-            <button className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100">
+            <button
+              onClick={() => setIsUserLoginOpen(true)}
+              className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100">
               Sign In
             </button>
-            <button className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100">
+            <button
+              onClick={() => setIsUserRegisterOpen(true)}
+              className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100">
               Register
             </button>
           </div>
 
           {/* Mobile Right Side - Sign In/Register + Hamburger */}
           <div className="flex lg:hidden items-center gap-2 sm:gap-3">
-            <button className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100 whitespace-nowrap">
+            <button
+              onClick={() => setIsUserLoginOpen(true)}
+              className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100 whitespace-nowrap">
               Sign In
             </button>
-            <button className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100 whitespace-nowrap">
+            <button
+              onClick={() => setIsUserRegisterOpen(true)}
+              className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100 whitespace-nowrap">
               Register
             </button>
             {/* Mobile Hamburger Button */}
@@ -123,6 +163,44 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <UserLoginModal
+        isOpen={isUserLoginOpen}
+        onClose={() => setIsUserLoginOpen(false)}
+        onSwitchToRegister={switchToUserRegister}
+        onSwitchToVenueManager={() => {
+          setIsUserLoginOpen(false);
+          setIsVenueManagerLoginOpen(true);
+        }}
+      />
+      <UserRegisterModal
+        isOpen={isUserRegisterOpen}
+        onClose={() => setIsUserRegisterOpen(false)}
+        onSwitchToLogin={switchToUserLogin}
+        onSwitchToVenueManager={() => {
+          setIsUserRegisterOpen(false);
+          setIsVenueManagerRegisterOpen(true);
+        }}
+      />
+      <VenueManagerLoginModal
+        isOpen={isVenueManagerLoginOpen}
+        onClose={() => setIsVenueManagerLoginOpen(false)}
+        onSwitchToRegister={switchToVenueManagerRegister}
+        onSwitchToUser={() => {
+          setIsVenueManagerLoginOpen(false);
+          setIsUserLoginOpen(true);
+        }}
+      />
+      <VenueManagerRegisterModal
+        isOpen={isVenueManagerRegisterOpen}
+        onClose={() => setIsVenueManagerRegisterOpen(false)}
+        onSwitchToLogin={switchToVenueManagerLogin}
+        onSwitchToUser={() => {
+          setIsVenueManagerRegisterOpen(false);
+          setIsUserRegisterOpen(true);
+        }}
+      />
     </header>
   );
 };
