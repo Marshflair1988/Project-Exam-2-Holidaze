@@ -1,0 +1,78 @@
+const JoinSection = () => {
+  return (
+    <section className="w-full py-20 px-6 bg-[#e5e7eb4c]">
+      <div className="max-w-[1200px] mx-auto">
+        <div className="text-center mb-[60px]">
+          <h2 className="text-4xl font-bold text-holidaze-gray m-0 tracking-tight">
+            Join Holidaze
+          </h2>
+          <p className="text-lg text-holidaze-light-gray mt-3">
+            Whether you're looking to book or host, we have you covered
+          </p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="bg-white border border-holidaze-border rounded-lg p-10 flex flex-col items-center text-center gap-6">
+            <div className="w-20 h-20 rounded-full border-2 border-holidaze-border flex items-center justify-center bg-white">
+              <span className="text-[32px]">👤</span>
+            </div>
+            <h3 className="text-2xl font-semibold text-holidaze-gray m-0">
+              For Travelers
+            </h3>
+            <p className="text-base text-holidaze-light-gray leading-relaxed m-0">
+              Browse thousands of unique venues, read reviews, and book your
+              perfect stay with ease.
+            </p>
+            <ul className="list-none p-0 m-0 flex flex-col gap-3 w-full items-start">
+              <li className="flex items-center gap-3 text-[15px] text-holidaze-gray">
+                <span className="text-black font-bold text-lg">✓</span>
+                Search and filter venues
+              </li>
+              <li className="flex items-center gap-3 text-[15px] text-holidaze-gray">
+                <span className="text-black font-bold text-lg">✓</span>
+                View availability calendar
+              </li>
+              <li className="flex items-center gap-3 text-[15px] text-holidaze-gray">
+                <span className="text-black font-bold text-lg">✓</span>
+                Manage bookings
+              </li>
+            </ul>
+            <button className="py-3.5 px-8 text-base font-medium rounded cursor-pointer transition-all border-none w-full mt-2 bg-black text-white hover:bg-holidaze-gray">
+              Sign Up as Customer
+            </button>
+          </div>
+          <div className="bg-white border border-holidaze-border rounded-lg p-10 flex flex-col items-center text-center gap-6">
+            <div className="w-20 h-20 rounded-full border-2 border-holidaze-border flex items-center justify-center bg-white">
+              <span className="text-[32px]">🏢</span>
+            </div>
+            <h3 className="text-2xl font-semibold text-holidaze-gray m-0">
+              For Venue Managers
+            </h3>
+            <p className="text-base text-holidaze-light-gray leading-relaxed m-0">
+              List your properties, manage bookings, and connect with travelers
+              from around the world.
+            </p>
+            <ul className="list-none p-0 m-0 flex flex-col gap-3 w-full items-start">
+              <li className="flex items-center gap-3 text-[15px] text-holidaze-gray">
+                <span className="text-black font-bold text-lg">✓</span>
+                Create and manage venues
+              </li>
+              <li className="flex items-center gap-3 text-[15px] text-holidaze-gray">
+                <span className="text-black font-bold text-lg">✓</span>
+                Track bookings and revenue
+              </li>
+              <li className="flex items-center gap-3 text-[15px] text-holidaze-gray">
+                <span className="text-black font-bold text-lg">✓</span>
+                Update availability
+              </li>
+            </ul>
+            <button className="py-3.5 px-8 text-base font-medium rounded cursor-pointer transition-all w-full mt-2 bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100">
+              Sign Up as Venue Manager
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default JoinSection;
