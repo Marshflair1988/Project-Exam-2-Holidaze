@@ -29,7 +29,7 @@ const featuredVenues = [
 
 const FeaturedVenues = () => {
   return (
-    <section className="w-full py-20 px-6 bg-[#e5e7eb4c]">
+    <section className="w-full py-20 px-6 bg-white">
       <div className="max-w-[1200px] mx-auto">
         <div className="flex justify-between items-center mb-10">
           <h2 className="text-4xl font-bold text-holidaze-gray m-0 tracking-tight">

@@ -20,12 +20,13 @@ const HeroSection = () => {
           </div>
         </div>
         <div className="flex-1 max-w-[50%]">
-          <div className="w-full aspect-[4/3] bg-gradient-to-br from-[#667eea] to-[#764ba2] rounded-lg flex items-center justify-center relative overflow-hidden">
-            <span
-              className="relative z-10 text-white text-lg font-medium"
-              style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)' }}>
-              Overwater Bungalows
-            </span>
+          <div className="w-full aspect-[4/3] rounded-lg overflow-hidden relative">
+            <img
+              src="https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&h=600&fit=crop"
+              alt="Luxury overwater bungalows with turquoise water"
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
           </div>
         </div>
       </div>

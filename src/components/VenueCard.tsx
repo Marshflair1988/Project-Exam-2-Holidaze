@@ -12,26 +12,27 @@ interface VenueCardProps {
 }
 
 const VenueCard = ({ venue }: VenueCardProps) => {
-  const getGradientClasses = (imageType: string) => {
-    const gradients: Record<string, string> = {
-      'beach-villa': 'bg-gradient-to-br from-[#667eea] to-[#764ba2]',
-      'city-apartment': 'bg-gradient-to-br from-[#f093fb] to-[#f5576c]',
-      'mountain-cabin': 'bg-gradient-to-br from-[#4facfe] to-[#00f2fe]',
+  const getImageUrl = (imageType: string) => {
+    const images: Record<string, string> = {
+      'beach-villa':
+        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop',
+      'city-apartment':
+        'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop',
+      'mountain-cabin':
+        'https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=600&h=400&fit=crop',
     };
-    return gradients[imageType] || gradients['beach-villa'];
+    return images[imageType] || images['beach-villa'];
   };
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-200 flex flex-col hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
-      <div
-        className={`w-full aspect-[16/10] relative overflow-hidden flex items-center justify-center ${getGradientClasses(
-          venue.image
-        )}`}>
-        <span
-          className="text-white text-lg font-semibold z-10"
-          style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)' }}>
-          {venue.title}
-        </span>
+      <div className="w-full aspect-[16/10] relative overflow-hidden">
+        <img
+          src={getImageUrl(venue.image)}
+          alt={venue.title}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
       </div>
       <div className="p-5 flex flex-col gap-3">
         <h3 className="text-xl font-semibold text-holidaze-gray m-0">
