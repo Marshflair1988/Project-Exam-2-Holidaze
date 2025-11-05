@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 interface Venue {
   id: number;
   title: string;
@@ -62,9 +64,11 @@ const VenueCard = ({ venue }: VenueCardProps) => {
           <span className="text-lg">🛏️</span>
           <span className="text-lg">👥</span>
         </div>
-        <button className="py-3 px-6 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-colors mt-2 hover:bg-holidaze-gray">
+        <Link
+          to={`/venue/${venue.id}`}
+          className="py-3 px-6 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-colors mt-2 hover:bg-holidaze-gray no-underline text-center block">
           View Details
-        </button>
+        </Link>
       </div>
     </div>
   );
