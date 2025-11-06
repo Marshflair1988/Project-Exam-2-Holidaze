@@ -1,18 +1,51 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { authApi, setAccessToken, setUserData } from '../services/api';
 
 const VenueManagerLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    // TODO: Implement login logic
-    console.log('Venue manager login:', { email, password });
+    setIsLoading(true);
+
+    try {
+      const response = await authApi.login({ email, password });
+      
+      if (response.data.accessToken) {
+        console.log('✅ Venue Manager login successful!', {
+          name: response.data.name,
+          email: response.data.email,
+          venueManager: response.data.venueManager,
+        });
+        
+        setAccessToken(response.data.accessToken);
+        setUserData({
+          name: response.data.name,
+          email: response.data.email,
+          bio: response.data.bio,
+          avatar: response.data.avatar,
+          banner: response.data.banner,
+          venueManager: response.data.venueManager,
+        });
+        
+        // Redirect to venue manager dashboard
+        navigate('/venue-manager/dashboard');
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -74,8 +107,9 @@ const VenueManagerLogin = () => {
 
             <button
               type="submit"
-              className="w-full py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none bg-black text-white hover:bg-holidaze-gray mb-4">
-              Sign In
+              disabled={isLoading}
+              className="w-full py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none bg-black text-white hover:bg-holidaze-gray mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
 
             <div className="text-center text-sm text-holidaze-light-gray">

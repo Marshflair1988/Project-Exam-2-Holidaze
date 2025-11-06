@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authApi, setAccessToken, setUserData } from '../services/api';
 
 interface VenueManagerRegisterModalProps {
   isOpen: boolean;
@@ -19,6 +21,8 @@ const VenueManagerRegisterModal = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Reset form when modal closes
   useEffect(() => {
@@ -44,7 +48,7 @@ const VenueManagerRegisterModal = ({
     };
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -58,15 +62,96 @@ const VenueManagerRegisterModal = ({
       return;
     }
 
-    // TODO: Implement registration logic
-    console.log('Venue manager registration:', {
-      name,
-      email,
-      password,
-      companyName,
-    });
-    // Close modal on success (you can add this after API call)
-    // onClose();
+    // Validate name (no punctuation except underscore, spaces allowed)
+    if (!/^[a-zA-Z0-9_ ]+$/.test(name)) {
+      setError('Name can only contain letters, numbers, underscores, and spaces');
+      return;
+    }
+
+    // Validate email (must be stud.noroff.no)
+    if (!email.endsWith('@stud.noroff.no')) {
+      setError('Email must be a valid stud.noroff.no email address');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Replace spaces with underscores for API (API doesn't accept spaces)
+      const apiName = name.replace(/\s+/g, '_');
+      
+      const response = await authApi.register({
+        name: apiName,
+        email,
+        password,
+        venueManager: true,
+        bio: companyName ? `Company: ${companyName}` : undefined,
+      });
+
+      console.log('✅ Registration response:', response);
+
+      // Registration successful - now automatically log in to get access token
+      if (response.data && response.data.name) {
+        console.log('✅ Registration successful! Logging in automatically...', {
+          name: response.data.name,
+          email: response.data.email,
+        });
+        
+        try {
+          // Automatically log in with the same credentials to get access token
+          const loginResponse = await authApi.login({
+            email: email,
+            password: password,
+          });
+
+          if (loginResponse.data && loginResponse.data.accessToken) {
+            console.log('✅ Auto-login successful!', {
+              name: loginResponse.data.name,
+              email: loginResponse.data.email,
+            });
+            
+            setAccessToken(loginResponse.data.accessToken);
+            setUserData({
+              name: loginResponse.data.name,
+              email: loginResponse.data.email,
+              bio: loginResponse.data.bio,
+              avatar: loginResponse.data.avatar,
+              banner: loginResponse.data.banner,
+              venueManager: loginResponse.data.venueManager,
+            });
+
+            // Show success message
+            setError('');
+            alert('Registration successful! Welcome to Holidaze!');
+            
+            onClose();
+            // Redirect to venue manager dashboard
+            navigate('/venue-manager/dashboard');
+          } else {
+            console.error('❌ Auto-login failed - no accessToken:', loginResponse);
+            setError('Registration successful, but login failed. Please try logging in manually.');
+          }
+        } catch (loginErr: any) {
+          console.error('❌ Auto-login error:', loginErr);
+          setError('Registration successful, but automatic login failed. Please try logging in manually.');
+        }
+      } else {
+        console.error('❌ Registration failed:', response);
+        setError('Registration failed. Please try again.');
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Registration failed. Please try again.';
+      
+      // Provide more helpful message if profile already exists
+      if (errorMessage.toLowerCase().includes('already exists') || 
+          errorMessage.toLowerCase().includes('profile already')) {
+        setError('This username or email is already taken. The API requires both email AND username to be unique. If you have an account, please try logging in. Otherwise, try adding numbers or variations to your username (e.g., "john_smith_123").');
+      } else {
+        setError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -109,7 +194,7 @@ const VenueManagerRegisterModal = ({
               <label
                 htmlFor="modal-vm-name"
                 className="block text-sm font-medium text-holidaze-gray mb-2">
-                Full Name
+                Full Name (Username)
               </label>
               <input
                 type="text"
@@ -120,6 +205,9 @@ const VenueManagerRegisterModal = ({
                 className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                 placeholder="Enter your full name"
               />
+              <p className="mt-1 text-xs text-holidaze-light-gray">
+                Note: Your username must be unique. If taken, try adding numbers (e.g., "john_smith_123")
+              </p>
             </div>
 
             <div className="mb-4">
@@ -193,8 +281,9 @@ const VenueManagerRegisterModal = ({
 
             <button
               type="submit"
-              className="w-full py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none bg-black text-white hover:bg-holidaze-gray mb-4">
-              Create Account
+              disabled={isLoading}
+              className="w-full py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none bg-black text-white hover:bg-holidaze-gray mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
+              {isLoading ? 'Creating account...' : 'Create Account'}
             </button>
 
             <div className="text-center text-sm text-holidaze-light-gray">

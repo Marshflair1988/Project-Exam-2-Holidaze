@@ -1,17 +1,74 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import UserLoginModal from './UserLoginModal';
 import UserRegisterModal from './UserRegisterModal';
 import VenueManagerLoginModal from './VenueManagerLoginModal';
 import VenueManagerRegisterModal from './VenueManagerRegisterModal';
+import {
+  getAccessToken,
+  getUserData,
+  removeAccessToken,
+  removeUserData,
+} from '../services/api';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isUserLoginOpen, setIsUserLoginOpen] = useState(false);
   const [isUserRegisterOpen, setIsUserRegisterOpen] = useState(false);
   const [isVenueManagerLoginOpen, setIsVenueManagerLoginOpen] = useState(false);
   const [isVenueManagerRegisterOpen, setIsVenueManagerRegisterOpen] =
     useState(false);
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    avatar?: { url: string; alt?: string };
+    venueManager?: boolean;
+  } | null>(null);
+  const navigate = useNavigate();
+
+  // Check if user is logged in
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = getAccessToken();
+      const userData = getUserData();
+      if (token && userData) {
+        setUser(userData);
+      } else {
+        setUser(null);
+      }
+    };
+
+    checkAuth();
+    // Check auth state periodically (in case it changes in another tab)
+    const interval = setInterval(checkAuth, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isUserMenuOpen && !target.closest('.user-menu-container')) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isUserMenuOpen]);
+
+  const handleLogout = () => {
+    removeAccessToken();
+    removeUserData();
+    setUser(null);
+    setIsUserMenuOpen(false);
+    navigate('/');
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -79,30 +136,108 @@ const Header = () => {
                 🔍
               </span>
             </div>
-            <button
-              onClick={() => setIsUserLoginOpen(true)}
-              className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100">
-              Sign In
-            </button>
-            <button
-              onClick={() => setIsUserRegisterOpen(true)}
-              className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100">
-              Register
-            </button>
+            {user ? (
+              <div className="relative user-menu-container">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-3 py-2 px-3 rounded cursor-pointer transition-all hover:bg-gray-100">
+                  <img
+                    src={
+                      user.avatar?.url ||
+                      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop'
+                    }
+                    alt={user.avatar?.alt || user.name}
+                    className="w-8 h-8 rounded-full object-cover border border-holidaze-border"
+                  />
+                  <span className="text-[15px] font-medium text-holidaze-gray">
+                    {user.name}
+                  </span>
+                </button>
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-holidaze-border rounded-lg shadow-lg z-50">
+                    <div className="py-2">
+                      <Link
+                        to={user.venueManager ? '/venue-manager/dashboard' : '/user/profile'}
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-holidaze-gray hover:bg-gray-100 no-underline">
+                        {user.venueManager ? 'Dashboard' : 'My Profile'}
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-none bg-transparent cursor-pointer">
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsUserLoginOpen(true)}
+                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100">
+                  Sign In
+                </button>
+                <button
+                  onClick={() => setIsUserRegisterOpen(true)}
+                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100">
+                  Register
+                </button>
+              </>
+            )}
           </div>
 
-          {/* Mobile Right Side - Sign In/Register + Hamburger */}
+          {/* Mobile Right Side - User Menu or Sign In/Register + Hamburger */}
           <div className="flex lg:hidden items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => setIsUserLoginOpen(true)}
-              className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100 whitespace-nowrap">
-              Sign In
-            </button>
-            <button
-              onClick={() => setIsUserRegisterOpen(true)}
-              className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100 whitespace-nowrap">
-              Register
-            </button>
+            {user ? (
+              <div className="relative user-menu-container">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 py-2 px-3 rounded cursor-pointer transition-all hover:bg-gray-100">
+                  <img
+                    src={
+                      user.avatar?.url ||
+                      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop'
+                    }
+                    alt={user.avatar?.alt || user.name}
+                    className="w-8 h-8 rounded-full object-cover border border-holidaze-border"
+                  />
+                  <span className="text-xs sm:text-sm font-medium text-holidaze-gray">
+                    {user.name}
+                  </span>
+                </button>
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-holidaze-border rounded-lg shadow-lg z-50">
+                    <div className="py-2">
+                      <Link
+                        to={user.venueManager ? '/venue-manager/dashboard' : '/user/profile'}
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-holidaze-gray hover:bg-gray-100 no-underline">
+                        {user.venueManager ? 'Dashboard' : 'My Profile'}
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-none bg-transparent cursor-pointer">
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsUserLoginOpen(true)}
+                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100 whitespace-nowrap">
+                  Sign In
+                </button>
+                <button
+                  onClick={() => setIsUserRegisterOpen(true)}
+                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100 whitespace-nowrap">
+                  Register
+                </button>
+              </>
+            )}
             {/* Mobile Hamburger Button */}
             <button
               onClick={toggleMenu}
@@ -167,7 +302,15 @@ const Header = () => {
       {/* Modals */}
       <UserLoginModal
         isOpen={isUserLoginOpen}
-        onClose={() => setIsUserLoginOpen(false)}
+        onClose={() => {
+          setIsUserLoginOpen(false);
+          // Refresh user state after login
+          const token = getAccessToken();
+          const userData = getUserData();
+          if (token && userData) {
+            setUser(userData);
+          }
+        }}
         onSwitchToRegister={switchToUserRegister}
         onSwitchToVenueManager={() => {
           setIsUserLoginOpen(false);
@@ -176,7 +319,15 @@ const Header = () => {
       />
       <UserRegisterModal
         isOpen={isUserRegisterOpen}
-        onClose={() => setIsUserRegisterOpen(false)}
+        onClose={() => {
+          setIsUserRegisterOpen(false);
+          // Refresh user state after registration
+          const token = getAccessToken();
+          const userData = getUserData();
+          if (token && userData) {
+            setUser(userData);
+          }
+        }}
         onSwitchToLogin={switchToUserLogin}
         onSwitchToVenueManager={() => {
           setIsUserRegisterOpen(false);
@@ -185,7 +336,15 @@ const Header = () => {
       />
       <VenueManagerLoginModal
         isOpen={isVenueManagerLoginOpen}
-        onClose={() => setIsVenueManagerLoginOpen(false)}
+        onClose={() => {
+          setIsVenueManagerLoginOpen(false);
+          // Refresh user state after login
+          const token = getAccessToken();
+          const userData = getUserData();
+          if (token && userData) {
+            setUser(userData);
+          }
+        }}
         onSwitchToRegister={switchToVenueManagerRegister}
         onSwitchToUser={() => {
           setIsVenueManagerLoginOpen(false);
@@ -194,7 +353,15 @@ const Header = () => {
       />
       <VenueManagerRegisterModal
         isOpen={isVenueManagerRegisterOpen}
-        onClose={() => setIsVenueManagerRegisterOpen(false)}
+        onClose={() => {
+          setIsVenueManagerRegisterOpen(false);
+          // Refresh user state after registration
+          const token = getAccessToken();
+          const userData = getUserData();
+          if (token && userData) {
+            setUser(userData);
+          }
+        }}
         onSwitchToLogin={switchToVenueManagerLogin}
         onSwitchToUser={() => {
           setIsVenueManagerRegisterOpen(false);

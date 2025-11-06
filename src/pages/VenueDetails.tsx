@@ -1,14 +1,30 @@
 import { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import BookingFormModal from '../components/BookingFormModal';
+import BookingConfirmationModal from '../components/BookingConfirmationModal';
 
 const VenueDetails = () => {
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [confirmedBooking, setConfirmedBooking] = useState<{
+    venueName: string;
+    venueImage: string;
+    checkIn: string;
+    checkOut: string;
+    guests: number;
+    totalPrice: number;
+    bookingId?: string;
+  } | null>(null);
 
   // Sample data - replace with actual API data
   const venueData = {
+    id: '1',
     name: 'Luxury Beach Villa',
     location: 'Malibu, California',
+    price: 450,
+    maxGuests: 8,
     description:
       'Experience the ultimate in luxury beachfront living at our stunning villa. With breathtaking ocean views, private beach access, and world-class amenities, this is the perfect escape for your next vacation. The property features spacious rooms, a fully equipped kitchen, and a stunning infinity pool.',
     rating: 4.9,
@@ -77,6 +93,37 @@ const VenueDetails = () => {
       lng: -118.2437,
       address: '1234 Ocean Drive, Malibu, CA 90265',
     },
+  };
+
+  const handleBookNow = () => {
+    setIsBookingFormOpen(true);
+  };
+
+  const handleSaveBooking = (bookingData: {
+    venueId: string;
+    checkIn: string;
+    checkOut: string;
+    guests: number;
+  }) => {
+    const checkInDate = new Date(bookingData.checkIn);
+    const checkOutDate = new Date(bookingData.checkOut);
+    const nights = Math.ceil(
+      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const totalPrice = venueData.price * nights;
+
+    setConfirmedBooking({
+      venueName: venueData.name,
+      venueImage: venueData.images[0],
+      checkIn: bookingData.checkIn,
+      checkOut: bookingData.checkOut,
+      guests: bookingData.guests,
+      totalPrice,
+      bookingId: Date.now().toString(),
+    });
+
+    setIsBookingFormOpen(false);
+    setIsConfirmationOpen(true);
   };
 
   return (
@@ -168,6 +215,25 @@ const VenueDetails = () => {
                 ))}
               </div>
             </div>
+
+            {/* Book Now Section */}
+            <div className="bg-gray-50 border border-holidaze-border rounded-lg p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-holidaze-gray m-0 mb-2">
+                    Ready to book?
+                  </h3>
+                  <p className="text-base text-holidaze-light-gray m-0">
+                    Reserve your stay at {venueData.name}
+                  </p>
+                </div>
+                <button
+                  onClick={handleBookNow}
+                  className="py-3 px-8 bg-black text-white border-none rounded text-base sm:text-lg font-medium cursor-pointer transition-all hover:bg-holidaze-gray whitespace-nowrap">
+                  Book Now
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -200,7 +266,7 @@ const VenueDetails = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-holidaze-gray">
                       Available:
                     </span>
@@ -208,9 +274,6 @@ const VenueDetails = () => {
                       {room.available} rooms
                     </span>
                   </div>
-                  <button className="w-full py-3 px-6 bg-black text-white border-none rounded text-sm sm:text-base font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
-                    Manage Availability
-                  </button>
                 </div>
               ))}
             </div>
@@ -306,6 +369,40 @@ const VenueDetails = () => {
         </section>
       </main>
       <Footer />
+
+      {/* Booking Form Modal */}
+      <BookingFormModal
+        isOpen={isBookingFormOpen}
+        onClose={() => setIsBookingFormOpen(false)}
+        onSave={handleSaveBooking}
+        availableVenues={[
+          {
+            id: venueData.id,
+            name: venueData.name,
+            location: venueData.location,
+            price: venueData.price,
+            maxGuests: venueData.maxGuests,
+            rating: venueData.rating,
+            images: venueData.images,
+          },
+        ]}
+        selectedVenue={{
+          id: venueData.id,
+          name: venueData.name,
+          location: venueData.location,
+          price: venueData.price,
+          maxGuests: venueData.maxGuests,
+          rating: venueData.rating,
+          images: venueData.images,
+        }}
+      />
+
+      {/* Booking Confirmation Modal */}
+      <BookingConfirmationModal
+        isOpen={isConfirmationOpen}
+        onClose={() => setIsConfirmationOpen(false)}
+        bookingData={confirmedBooking}
+      />
     </div>
   );
 };

@@ -98,7 +98,9 @@ const BookingFormModal = ({
       formData.guests < 1 ||
       (selectedVenueData && formData.guests > selectedVenueData.maxGuests)
     ) {
-      newErrors.guests = `Number of guests must be between 1 and ${selectedVenueData?.maxGuests || 'unlimited'}`;
+      newErrors.guests = `Number of guests must be between 1 and ${
+        selectedVenueData?.maxGuests || 'unlimited'
+      }`;
     }
 
     setErrors(newErrors);
@@ -124,11 +126,7 @@ const BookingFormModal = ({
   };
 
   const calculateTotalPrice = () => {
-    if (
-      !formData.checkIn ||
-      !formData.checkOut ||
-      !selectedVenueData
-    ) {
+    if (!formData.checkIn || !formData.checkOut || !selectedVenueData) {
       return 0;
     }
     const nights = Math.ceil(
@@ -231,9 +229,7 @@ const BookingFormModal = ({
                   dateFormat="MMM dd, yyyy"
                   placeholderText="Select check-in date"
                   className={`w-full py-3 px-4 border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                    errors.checkIn
-                      ? 'border-red-300'
-                      : 'border-holidaze-border'
+                    errors.checkIn ? 'border-red-300' : 'border-holidaze-border'
                   }`}
                 />
                 {errors.checkIn && (
@@ -264,9 +260,7 @@ const BookingFormModal = ({
                   }`}
                 />
                 {errors.checkOut && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {errors.checkOut}
-                  </p>
+                  <p className="text-sm text-red-600 mt-1">{errors.checkOut}</p>
                 )}
               </div>
             </div>
@@ -306,7 +300,8 @@ const BookingFormModal = ({
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-sm text-holidaze-light-gray m-0">
-                      Nights: {Math.ceil(
+                      Nights:{' '}
+                      {Math.ceil(
                         (formData.checkOut.getTime() -
                           formData.checkIn.getTime()) /
                           (1000 * 60 * 60 * 24)
@@ -349,4 +344,3 @@ const BookingFormModal = ({
 };
 
 export default BookingFormModal;
-

@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BookingFormModal from '../components/BookingFormModal';
+import {
+  profilesApi,
+  removeAccessToken,
+  removeUserData,
+  getUserData,
+} from '../services/api';
 
 interface Booking {
   id: string;
@@ -25,9 +32,22 @@ interface Venue {
 }
 
 const UserProfile = () => {
-  const [activeTab, setActiveTab] = useState<'bookings' | 'profile'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'profile'>(
+    'bookings'
+  );
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [username, setUsername] = useState<string>('');
+  const navigate = useNavigate();
+
+  // Get username from stored user data
+  useEffect(() => {
+    const userData = getUserData();
+    if (userData?.name) {
+      setUsername(userData.name);
+    }
+  }, []);
 
   // Sample data - replace with actual API data
   const [bookings, setBookings] = useState<Booking[]>([
@@ -171,6 +191,31 @@ const UserProfile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account? This action cannot be undone and will permanently delete your profile and all associated data.'
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+
+    try {
+      await profilesApi.deleteProfile();
+      // Clear local storage
+      removeAccessToken();
+      removeUserData();
+      // Redirect to home page
+      navigate('/');
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      alert(
+        error.message || 'Failed to delete account. Please try again later.'
+      );
+      setIsDeleting(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -200,7 +245,7 @@ const UserProfile = () => {
           {/* Profile Header */}
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-holidaze-gray m-0 mb-2 tracking-tight">
-              My Profile
+              {username ? `Welcome back ${username}` : 'My Profile'}
             </h1>
             <p className="text-base text-holidaze-light-gray m-0">
               Manage your bookings and profile settings
@@ -271,9 +316,8 @@ const UserProfile = () => {
                                   className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
                                     booking.status
                                   )}`}>
-                                  {booking.status
-                                    .charAt(0)
-                                    .toUpperCase() + booking.status.slice(1)}
+                                  {booking.status.charAt(0).toUpperCase() +
+                                    booking.status.slice(1)}
                                 </span>
                               </div>
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mb-4">
@@ -314,7 +358,9 @@ const UserProfile = () => {
                               </div>
                               {booking.status !== 'cancelled' && (
                                 <button
-                                  onClick={() => handleCancelBooking(booking.id)}
+                                  onClick={() =>
+                                    handleCancelBooking(booking.id)
+                                  }
                                   className="py-2 px-4 bg-white text-red-600 border border-red-200 rounded text-sm font-medium cursor-pointer transition-all hover:bg-red-50">
                                   Cancel Booking
                                 </button>
@@ -454,6 +500,23 @@ const UserProfile = () => {
                     </button>
                   </div>
                 </div>
+
+                {/* Delete Account Section */}
+                <div className="mt-8 pt-8 border-t border-holidaze-border">
+                  <h3 className="text-lg font-semibold text-holidaze-gray m-0 mb-2">
+                    Danger Zone
+                  </h3>
+                  <p className="text-sm text-holidaze-light-gray m-0 mb-4">
+                    Once you delete your account, there is no going back. Please
+                    be certain.
+                  </p>
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    className="py-2.5 px-5 bg-red-600 text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {isDeleting ? 'Deleting Account...' : 'Delete Account'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -477,4 +540,3 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
-
