@@ -101,6 +101,11 @@ const apiCall = async <T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   const token = getAccessToken();
+  if (!API_KEY) {
+    throw new Error(
+      'API key is not configured. Please set VITE_NOROFF_API_KEY in your environment variables.'
+    );
+  }
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     'X-Noroff-API-Key': API_KEY,
@@ -109,13 +114,19 @@ const apiCall = async <T>(
   };
 
   // Log request details for debugging
-  if (endpoint === '/auth/register' && options.body) {
+  if (
+    options.body &&
+    (endpoint === '/auth/register' || endpoint.includes('/holidaze/venues'))
+  ) {
     try {
       const bodyData = JSON.parse(options.body as string);
       console.log('🚀 API Request:', {
         endpoint: `${API_BASE_URL}${endpoint}`,
         method: options.method || 'GET',
-        body: { ...bodyData, password: '***' }, // Hide password in logs
+        body:
+          endpoint === '/auth/register'
+            ? { ...bodyData, password: '***' } // Hide password in logs
+            : bodyData,
       });
     } catch (e) {
       // Ignore parse errors

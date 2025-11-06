@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi, setAccessToken, setUserData } from '../services/api';
+import {
+  authApi,
+  profilesApi,
+  setAccessToken,
+  setUserData,
+} from '../services/api';
 
 interface UserLoginModalProps {
   isOpen: boolean;
@@ -49,32 +54,61 @@ const UserLoginModal = ({
 
     try {
       const response = await authApi.login({ email, password });
-      
+
       if (response.data.accessToken) {
+        setAccessToken(response.data.accessToken);
+
+        // Fetch user profile to get complete user data including venueManager status
+        let venueManager = false;
+        try {
+          const profileResponse = await profilesApi.getProfile(
+            response.data.name
+          );
+          if (profileResponse.data) {
+            const profile = profileResponse.data as { venueManager?: boolean };
+            venueManager = profile.venueManager || false;
+            console.log('✅ Profile fetched:', { venueManager });
+          }
+        } catch (profileErr) {
+          console.warn(
+            '⚠️ Could not fetch profile, using default venueManager status:',
+            profileErr
+          );
+        }
+
         console.log('✅ Login successful!', {
           name: response.data.name,
           email: response.data.email,
-          venueManager: response.data.venueManager,
+          venueManager: venueManager,
         });
-        
-        setAccessToken(response.data.accessToken);
+
         setUserData({
           name: response.data.name,
           email: response.data.email,
           bio: response.data.bio,
           avatar: response.data.avatar,
           banner: response.data.banner,
-          venueManager: response.data.venueManager,
+          venueManager: venueManager,
         });
-        
+
         onClose();
-        // Redirect to user dashboard for regular users
-        navigate('/user/profile');
+        // Redirect based on user type
+        if (venueManager) {
+          // Venue manager - redirect to admin dashboard
+          navigate('/venue-manager/dashboard');
+        } else {
+          // Regular user - redirect to user dashboard
+          navigate('/user/profile');
+        }
       } else {
         setError('Login failed. Please try again.');
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Login failed. Please check your credentials.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

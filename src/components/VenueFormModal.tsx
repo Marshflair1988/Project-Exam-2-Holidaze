@@ -8,6 +8,8 @@ interface Venue {
   maxGuests: number;
   rating: number;
   images: string[];
+  description?: string;
+  amenities?: string[];
 }
 
 interface VenueFormModalProps {
@@ -61,8 +63,8 @@ const VenueFormModal = ({
         price: editingVenue.price.toString(),
         maxGuests: editingVenue.maxGuests.toString(),
         images: editingVenue.images || [],
-        description: '',
-        amenities: [],
+        description: editingVenue.description || '',
+        amenities: editingVenue.amenities || [],
       });
     } else {
       setFormData({
@@ -117,6 +119,18 @@ const VenueFormModal = ({
       newErrors.images = 'At least 1 image is required (max 5)';
     } else if (formData.images.length > 5) {
       newErrors.images = 'You can upload up to 5 images';
+    } else {
+      // Check if all images are valid HTTP/HTTPS URLs (not base64)
+      const invalidImages = formData.images.filter(
+        (img) =>
+          img.trim() !== '' &&
+          !img.trim().startsWith('http://') &&
+          !img.trim().startsWith('https://')
+      );
+      if (invalidImages.length > 0) {
+        newErrors.images =
+          'All images must be valid HTTP/HTTPS URLs. Base64 images are not supported. Please use image URLs instead.';
+      }
     }
 
     setErrors(newErrors);
@@ -133,6 +147,8 @@ const VenueFormModal = ({
         maxGuests: parseInt(formData.maxGuests),
         rating: editingVenue?.rating || 0,
         images: formData.images,
+        description: formData.description,
+        amenities: formData.amenities,
       });
     }
   };
@@ -152,23 +168,6 @@ const VenueFormModal = ({
   const handleRemoveImage = (index: number) => {
     const updated = formData.images.filter((_, i) => i !== index);
     setFormData({ ...formData, images: updated });
-  };
-
-  const handleImageFiles = (files: FileList | null) => {
-    if (!files) return;
-    const remainingSlots = 5 - formData.images.length;
-    const filesArray = Array.from(files).slice(0, remainingSlots);
-    const readers = filesArray.map(
-      (file) =>
-        new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
-        })
-    );
-    Promise.all(readers).then((dataUrls) => {
-      setFormData({ ...formData, images: [...formData.images, ...dataUrls] });
-    });
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -272,7 +271,9 @@ const VenueFormModal = ({
                     setFormData({ ...formData, maxGuests: e.target.value })
                   }
                   className={`w-full py-3 px-4 border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                    errors.maxGuests ? 'border-red-300' : 'border-holidaze-border'
+                    errors.maxGuests
+                      ? 'border-red-300'
+                      : 'border-holidaze-border'
                   }`}
                   placeholder="1"
                 />
@@ -297,9 +298,13 @@ const VenueFormModal = ({
                       <input
                         type="url"
                         value={img}
-                        onChange={(e) => handleImageChange(index, e.target.value)}
+                        onChange={(e) =>
+                          handleImageChange(index, e.target.value)
+                        }
                         className={`w-full py-3 px-4 border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                          errors.images ? 'border-red-300' : 'border-holidaze-border'
+                          errors.images
+                            ? 'border-red-300'
+                            : 'border-holidaze-border'
                         }`}
                         placeholder={`Image URL ${index + 1}`}
                       />
@@ -335,17 +340,11 @@ const VenueFormModal = ({
                   className="py-2.5 px-4 bg-white text-holidaze-gray border border-holidaze-border rounded text-sm font-medium cursor-pointer transition-all hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
                   + Add Image URL
                 </button>
-                <label className="py-2.5 px-4 bg-white text-holidaze-gray border border-holidaze-border rounded text-sm font-medium cursor-pointer transition-all hover:bg-gray-100">
-                  Upload Images
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => handleImageFiles(e.target.files)}
-                    className="hidden"
-                  />
-                </label>
               </div>
+              <p className="mt-2 text-xs text-holidaze-light-gray">
+                Note: Only HTTP/HTTPS image URLs are supported. Please use image
+                URLs from services like Unsplash, Imgur, etc.
+              </p>
 
               {errors.images && (
                 <p className="text-sm text-red-600 mt-2">{errors.images}</p>
@@ -411,4 +410,3 @@ const VenueFormModal = ({
 };
 
 export default VenueFormModal;
-

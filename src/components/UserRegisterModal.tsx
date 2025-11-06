@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi, setAccessToken, setUserData, getAccessToken } from '../services/api';
+import {
+  authApi,
+  setAccessToken,
+  setUserData,
+  getAccessToken,
+} from '../services/api';
 
 interface UserRegisterModalProps {
   isOpen: boolean;
@@ -49,10 +54,12 @@ const UserRegisterModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     // Check if user is already logged in
     if (getAccessToken()) {
-      setError('You are already logged in. Please log out first before registering a new account.');
+      setError(
+        'You are already logged in. Please log out first before registering a new account.'
+      );
       return;
     }
 
@@ -68,7 +75,9 @@ const UserRegisterModal = ({
 
     // Validate name (no punctuation except underscore, spaces allowed)
     if (!/^[a-zA-Z0-9_ ]+$/.test(name)) {
-      setError('Name can only contain letters, numbers, underscores, and spaces');
+      setError(
+        'Name can only contain letters, numbers, underscores, and spaces'
+      );
       return;
     }
 
@@ -83,21 +92,21 @@ const UserRegisterModal = ({
     try {
       // Replace spaces with underscores for API (API doesn't accept spaces)
       const apiName = name.replace(/\s+/g, '_');
-      
+
       const registrationData = {
         name: apiName,
         email,
         password,
         venueManager: false,
       };
-      
+
       console.log('📝 Registration attempt:', {
         originalName: name,
         apiName: apiName,
         email: email,
         venueManager: false,
       });
-      
+
       const response = await authApi.register(registrationData);
 
       console.log('✅ Registration response:', response);
@@ -108,7 +117,7 @@ const UserRegisterModal = ({
           name: response.data.name,
           email: response.data.email,
         });
-        
+
         try {
           // Automatically log in with the same credentials to get access token
           const loginResponse = await authApi.login({
@@ -121,7 +130,7 @@ const UserRegisterModal = ({
               name: loginResponse.data.name,
               email: loginResponse.data.email,
             });
-            
+
             setAccessToken(loginResponse.data.accessToken);
             setUserData({
               name: loginResponse.data.name,
@@ -135,43 +144,59 @@ const UserRegisterModal = ({
             // Show success message
             setError('');
             alert('Registration successful! Welcome to Holidaze!');
-            
+
             onClose();
             // Redirect to user dashboard for regular users
             navigate('/user/profile');
           } else {
-            console.error('❌ Auto-login failed - no accessToken:', loginResponse);
-            setError('Registration successful, but login failed. Please try logging in manually.');
+            console.error(
+              '❌ Auto-login failed - no accessToken:',
+              loginResponse
+            );
+            setError(
+              'Registration successful, but login failed. Please try logging in manually.'
+            );
           }
-        } catch (loginErr: any) {
+        } catch (loginErr: unknown) {
           console.error('❌ Auto-login error:', loginErr);
-          setError('Registration successful, but automatic login failed. Please try logging in manually.');
+          setError(
+            'Registration successful, but automatic login failed. Please try logging in manually.'
+          );
         }
       } else {
         console.error('❌ Registration failed:', response);
         setError('Registration failed. Please try again.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Registration error:', err);
-      const errorMessage = err.message || 'Registration failed. Please try again.';
-      
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Registration failed. Please try again.';
+
       // Provide more helpful message if profile already exists
-      if (errorMessage.toLowerCase().includes('already exists') || 
-          errorMessage.toLowerCase().includes('profile already')) {
+      if (
+        errorMessage.toLowerCase().includes('already exists') ||
+        errorMessage.toLowerCase().includes('profile already')
+      ) {
         // Try to determine if it's email or username
         const isEmailConflict = errorMessage.toLowerCase().includes('email');
-        const isUsernameConflict = errorMessage.toLowerCase().includes('name') || 
-                                   errorMessage.toLowerCase().includes('username');
-        
+        const isUsernameConflict =
+          errorMessage.toLowerCase().includes('name') ||
+          errorMessage.toLowerCase().includes('username');
+
         let specificMessage = 'This username or email is already taken. ';
         if (isEmailConflict) {
-          specificMessage = 'This email is already registered. Please try logging in or use a different email.';
+          specificMessage =
+            'This email is already registered. Please try logging in or use a different email.';
         } else if (isUsernameConflict) {
-          specificMessage = 'This username is already taken. Please try adding numbers or variations (e.g., "OrientalBanana_123").';
+          specificMessage =
+            'This username is already taken. Please try adding numbers or variations (e.g., "OrientalBanana_123").';
         } else {
-          specificMessage += 'The API requires both email AND username to be unique. If you have an account, please try logging in. Otherwise, try adding numbers or variations to your username.';
+          specificMessage +=
+            'Registration requires both email AND username to be unique. If you have an account, please try logging in. Otherwise, try adding numbers or variations to your username.';
         }
-        
+
         setError(specificMessage);
       } else {
         setError(errorMessage);
@@ -233,7 +258,8 @@ const UserRegisterModal = ({
                 placeholder="Enter your full name"
               />
               <p className="mt-1 text-xs text-holidaze-light-gray">
-                Note: Your username must be unique. If taken, try adding numbers (e.g., "john_smith_123")
+                Note: Your username must be unique. If taken, try adding numbers
+                (e.g., "john_smith_123")
               </p>
             </div>
 

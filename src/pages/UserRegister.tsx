@@ -93,7 +93,7 @@ const UserRegister = () => {
             console.error('❌ Auto-login failed - no accessToken:', loginResponse);
             setError('Registration successful, but login failed. Please try logging in manually.');
           }
-        } catch (loginErr: any) {
+        } catch (loginErr: unknown) {
           console.error('❌ Auto-login error:', loginErr);
           setError('Registration successful, but automatic login failed. Please try logging in manually.');
         }
@@ -101,8 +101,8 @@ const UserRegister = () => {
         console.error('❌ Registration failed:', response);
         setError('Registration failed. Please try again.');
       }
-    } catch (err: any) {
-      const errorMessage = err.message || 'Registration failed. Please try again.';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
       
       // Provide more helpful message if profile already exists
       if (errorMessage.toLowerCase().includes('already exists') || 

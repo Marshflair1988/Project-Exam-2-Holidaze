@@ -30,7 +30,9 @@ const VenueManagerRegister = () => {
 
     // Validate name (no punctuation except underscore, spaces allowed)
     if (!/^[a-zA-Z0-9_ ]+$/.test(name)) {
-      setError('Name can only contain letters, numbers, underscores, and spaces');
+      setError(
+        'Name can only contain letters, numbers, underscores, and spaces'
+      );
       return;
     }
 
@@ -45,7 +47,7 @@ const VenueManagerRegister = () => {
     try {
       // Replace spaces with underscores for API (API doesn't accept spaces)
       const apiName = name.replace(/\s+/g, '_');
-      
+
       const response = await authApi.register({
         name: apiName,
         email,
@@ -58,11 +60,15 @@ const VenueManagerRegister = () => {
 
       // Registration successful - now automatically log in to get access token
       if (response.data && response.data.name) {
+        // Get venueManager status from registration response (we registered with venueManager: true)
+        const isVenueManager = response.data.venueManager ?? true; // Default to true since we registered as venue manager
+
         console.log('✅ Registration successful! Logging in automatically...', {
           name: response.data.name,
           email: response.data.email,
+          venueManager: isVenueManager,
         });
-        
+
         try {
           // Automatically log in with the same credentials to get access token
           const loginResponse = await authApi.login({
@@ -74,42 +80,58 @@ const VenueManagerRegister = () => {
             console.log('✅ Auto-login successful!', {
               name: loginResponse.data.name,
               email: loginResponse.data.email,
+              venueManager: isVenueManager,
             });
-            
+
+            // Use venueManager from registration response since login might not include it
             setAccessToken(loginResponse.data.accessToken);
             setUserData({
-              name: loginResponse.data.name,
-              email: loginResponse.data.email,
-              bio: loginResponse.data.bio,
-              avatar: loginResponse.data.avatar,
-              banner: loginResponse.data.banner,
-              venueManager: loginResponse.data.venueManager,
+              name: loginResponse.data.name || response.data.name,
+              email: loginResponse.data.email || response.data.email,
+              bio: loginResponse.data.bio || response.data.bio,
+              avatar: loginResponse.data.avatar || response.data.avatar,
+              banner: loginResponse.data.banner || response.data.banner,
+              venueManager: isVenueManager, // Use from registration response
             });
 
             // Show success message
             alert('Registration successful! Welcome to Holidaze!');
-            
+
             // Redirect to venue manager dashboard
             navigate('/venue-manager/dashboard');
           } else {
-            console.error('❌ Auto-login failed - no accessToken:', loginResponse);
-            setError('Registration successful, but login failed. Please try logging in manually.');
+            console.error(
+              '❌ Auto-login failed - no accessToken:',
+              loginResponse
+            );
+            setError(
+              'Registration successful, but login failed. Please try logging in manually.'
+            );
           }
-        } catch (loginErr: any) {
+        } catch (loginErr: unknown) {
           console.error('❌ Auto-login error:', loginErr);
-          setError('Registration successful, but automatic login failed. Please try logging in manually.');
+          setError(
+            'Registration successful, but automatic login failed. Please try logging in manually.'
+          );
         }
       } else {
         console.error('❌ Registration failed:', response);
         setError('Registration failed. Please try again.');
       }
-    } catch (err: any) {
-      const errorMessage = err.message || 'Registration failed. Please try again.';
-      
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Registration failed. Please try again.';
+
       // Provide more helpful message if profile already exists
-      if (errorMessage.toLowerCase().includes('already exists') || 
-          errorMessage.toLowerCase().includes('profile already')) {
-        setError('This username or email is already taken. The API requires both email AND username to be unique. If you have an account, please try logging in. Otherwise, try adding numbers or variations to your username (e.g., "john_smith_123").');
+      if (
+        errorMessage.toLowerCase().includes('already exists') ||
+        errorMessage.toLowerCase().includes('profile already')
+      ) {
+        setError(
+          'This username or email is already taken. The API requires both email AND username to be unique. If you have an account, please try logging in. Otherwise, try adding numbers or variations to your username (e.g., "john_smith_123").'
+        );
       } else {
         setError(errorMessage);
       }
@@ -157,7 +179,8 @@ const VenueManagerRegister = () => {
                 placeholder="Enter your full name"
               />
               <p className="mt-1 text-xs text-holidaze-light-gray">
-                Note: Your username must be unique. If taken, try adding numbers (e.g., "john_smith_123")
+                Note: Your username must be unique. If taken, try adding numbers
+                (e.g., "john_smith_123")
               </p>
             </div>
 
