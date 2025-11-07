@@ -183,7 +183,43 @@ const apiCall = async <T>(
     throw new Error(errorMessage);
   }
 
-  return response.json();
+  // Handle empty responses (e.g., 204 No Content for DELETE)
+  const contentType = response.headers.get('content-type');
+  const contentLength = response.headers.get('content-length');
+
+  // If response is empty or has no content, return empty response
+  if (
+    response.status === 204 ||
+    contentLength === '0' ||
+    !contentType?.includes('application/json')
+  ) {
+    return {
+      data: null as T,
+      meta: {},
+    };
+  }
+
+  // Try to parse JSON, but handle empty responses gracefully
+  try {
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      return {
+        data: null as T,
+        meta: {},
+      };
+    }
+    return JSON.parse(text) as ApiResponse<T>;
+  } catch (parseError) {
+    // If parsing fails, return empty response
+    console.warn(
+      '⚠️ Failed to parse JSON response, returning empty response:',
+      parseError
+    );
+    return {
+      data: null as T,
+      meta: {},
+    };
+  }
 };
 
 // Authentication API calls
@@ -205,8 +241,17 @@ export const authApi = {
 
 // Venues API calls
 export const venuesApi = {
-  getAll: async (): Promise<ApiResponse<unknown[]>> => {
-    return apiCall<unknown[]>('/holidaze/venues');
+  getAll: async (includeOwner = false): Promise<ApiResponse<unknown[]>> => {
+    const endpoint = includeOwner
+      ? '/holidaze/venues?_owner=true'
+      : '/holidaze/venues';
+    return apiCall<unknown[]>(endpoint);
+  },
+
+  getByProfile: async (
+    profileName: string
+  ): Promise<ApiResponse<unknown[]>> => {
+    return apiCall<unknown[]>(`/holidaze/profiles/${profileName}/venues`);
   },
 
   getById: async (id: string): Promise<ApiResponse<unknown>> => {
@@ -228,6 +273,7 @@ export const venuesApi = {
   },
 
   delete: async (id: string): Promise<void> => {
+    // DELETE returns 204 No Content, so we don't need to handle the response
     await apiCall(`/holidaze/venues/${id}`, {
       method: 'DELETE',
     });

@@ -74,6 +74,10 @@ const VenueManagerDashboard = () => {
       rating?: number;
       media?: Array<{ url?: string; alt?: string }>;
       description?: string;
+      owner?: {
+        name?: string;
+        email?: string;
+      };
       meta?: {
         wifi?: boolean;
         parking?: boolean;
@@ -132,18 +136,21 @@ const VenueManagerDashboard = () => {
       setError(null);
 
       try {
-        const response = await venuesApi.getAll();
-        console.log('✅ Fetched venues:', response);
+        // Use the profile-specific endpoint to get only venues owned by the current user
+        const response = await venuesApi.getByProfile(userData.name);
+        console.log('✅ Fetched venues for profile:', userData.name, response);
 
         if (response.data && Array.isArray(response.data)) {
-          // Filter venues to only show those owned by the current venue manager
-          // The API should return venues for the logged-in venue manager
+          // The profile-specific endpoint already filters by owner, so we just need to transform
           const transformedVenues = response.data
             .map((venue) => transformVenueData(venue))
             .filter((venue): venue is Venue => venue !== null);
 
           setVenues(transformedVenues);
-          console.log('✅ Transformed venues:', transformedVenues);
+          console.log(
+            `✅ Loaded ${transformedVenues.length} venue(s) for ${userData.name}:`,
+            transformedVenues
+          );
         } else {
           setVenues([]);
         }
@@ -213,8 +220,10 @@ const VenueManagerDashboard = () => {
     }
 
     try {
-      const response = await venuesApi.getAll();
+      // Use the profile-specific endpoint to get only venues owned by the current user
+      const response = await venuesApi.getByProfile(userData.name);
       if (response.data && Array.isArray(response.data)) {
+        // The profile-specific endpoint already filters by owner, so we just need to transform
         const transformedVenues = response.data
           .map((venue) => transformVenueData(venue))
           .filter((venue): venue is Venue => venue !== null);
@@ -549,16 +558,23 @@ const VenueManagerDashboard = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditVenue(venue)}
+                              className="flex-1 py-2.5 px-4 bg-white text-holidaze-gray border border-holidaze-border rounded text-sm font-medium cursor-pointer transition-all hover:bg-gray-100">
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteVenue(venue.id)}
+                              className="flex-1 py-2.5 px-4 bg-white text-red-600 border border-red-200 rounded text-sm font-medium cursor-pointer transition-all hover:bg-red-50">
+                              Delete
+                            </button>
+                          </div>
                           <button
-                            onClick={() => handleEditVenue(venue)}
-                            className="flex-1 py-2.5 px-4 bg-white text-holidaze-gray border border-holidaze-border rounded text-sm font-medium cursor-pointer transition-all hover:bg-gray-100">
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteVenue(venue.id)}
-                            className="flex-1 py-2.5 px-4 bg-white text-red-600 border border-red-200 rounded text-sm font-medium cursor-pointer transition-all hover:bg-red-50">
-                            Delete
+                            onClick={() => navigate(`/venue/${venue.id}`)}
+                            className="w-full py-2.5 px-4 bg-black text-white border-none rounded text-sm font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                            Preview
                           </button>
                         </div>
                       </div>
