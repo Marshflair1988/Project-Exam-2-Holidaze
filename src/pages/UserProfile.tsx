@@ -39,6 +39,7 @@ const UserProfile = () => {
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [username, setUsername] = useState<string>('');
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const navigate = useNavigate();
 
   // Get username from stored user data
@@ -47,6 +48,55 @@ const UserProfile = () => {
     if (userData?.name) {
       setUsername(userData.name);
     }
+  }, []);
+
+  // Fetch user profile data from API
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const userData = getUserData();
+      if (!userData?.name) {
+        setIsLoadingProfile(false);
+        return;
+      }
+
+      try {
+        setIsLoadingProfile(true);
+        const response = await profilesApi.getProfile(userData.name);
+        if (response.data) {
+          const profile = response.data as {
+            name?: string;
+            email?: string;
+            avatar?: { url: string; alt?: string };
+            bio?: string;
+          };
+
+          setProfileData({
+            name: profile.name || userData.name || '',
+            email: profile.email || userData.email || '',
+            avatar:
+              profile.avatar?.url ||
+              'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop',
+          });
+        }
+      } catch (err: unknown) {
+        console.error('Error fetching profile:', err);
+        // Fallback to stored user data
+        const userData = getUserData();
+        if (userData) {
+          setProfileData({
+            name: userData.name || '',
+            email: userData.email || '',
+            avatar:
+              userData.avatar?.url ||
+              'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop',
+          });
+        }
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    fetchProfileData();
   }, []);
 
   // Sample data - replace with actual API data
@@ -123,9 +173,13 @@ const UserProfile = () => {
     },
   ];
 
-  const [profileData, setProfileData] = useState({
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
+  const [profileData, setProfileData] = useState<{
+    name: string;
+    email: string;
+    avatar: string;
+  }>({
+    name: '',
+    email: '',
     avatar:
       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop',
   });
@@ -435,14 +489,19 @@ const UserProfile = () => {
               </h2>
 
               <div className="bg-white border border-holidaze-border rounded-lg p-6 sm:p-8 max-w-2xl">
-                <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 mb-8">
-                  <div className="flex flex-col items-center sm:items-start">
-                    <div className="relative mb-4">
-                      <img
-                        src={profileData.avatar}
-                        alt="Profile"
-                        className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-holidaze-border"
-                      />
+                {isLoadingProfile ? (
+                  <div className="text-center py-8">
+                    <p className="text-holidaze-light-gray">Loading profile...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 mb-8">
+                    <div className="flex flex-col items-center sm:items-start">
+                      <div className="relative mb-4">
+                        <img
+                          src={profileData.avatar}
+                          alt="Profile"
+                          className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-holidaze-border"
+                        />
                       <label
                         htmlFor="user-avatar-upload"
                         className="absolute bottom-0 right-0 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-holidaze-gray transition-colors"
@@ -500,6 +559,7 @@ const UserProfile = () => {
                     </button>
                   </div>
                 </div>
+                )}
 
                 {/* Delete Account Section */}
                 <div className="mt-8 pt-8 border-t border-holidaze-border">
