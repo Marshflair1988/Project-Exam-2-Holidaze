@@ -241,11 +241,109 @@ export const authApi = {
 
 // Venues API calls
 export const venuesApi = {
-  getAll: async (includeOwner = false): Promise<ApiResponse<unknown[]>> => {
-    const endpoint = includeOwner
+  getAll: async (
+    includeOwner = false,
+    limit?: number,
+    page?: number
+  ): Promise<ApiResponse<unknown[]>> => {
+    let endpoint = includeOwner
       ? '/holidaze/venues?_owner=true'
       : '/holidaze/venues';
+
+    // Add pagination parameters if provided
+    const params: string[] = [];
+    if (limit !== undefined) {
+      params.push(`limit=${limit}`);
+    }
+    if (page !== undefined) {
+      params.push(`page=${page}`);
+    }
+
+    if (params.length > 0) {
+      const separator = endpoint.includes('?') ? '&' : '?';
+      endpoint = `${endpoint}${separator}${params.join('&')}`;
+    }
+
     return apiCall<unknown[]>(endpoint);
+  },
+
+  // Fetch all venues across multiple pages
+  getAllPaginated: async (includeOwner = false): Promise<unknown[]> => {
+    const allVenues: unknown[] = [];
+    let page = 1;
+    let hasMore = true;
+    const limit = 100; // API max limit
+    const maxPages = 50; // Safety limit to prevent infinite loops (50 pages = 5000 venues max)
+
+    while (hasMore && page <= maxPages) {
+      try {
+        const response = await venuesApi.getAll(includeOwner, limit, page);
+
+        if (response.data && Array.isArray(response.data)) {
+          // If we get an empty array, we've reached the end
+          if (response.data.length === 0) {
+            hasMore = false;
+            break;
+          }
+
+          allVenues.push(...response.data);
+          console.log(
+            `📄 Fetched page ${page}: ${response.data.length} venues (total: ${allVenues.length})`
+          );
+
+          // Check if there are more pages
+          // If we got less than the limit, we've reached the end
+          if (response.data.length < limit) {
+            hasMore = false;
+          } else {
+            // Check meta for pagination info if available
+            const meta = response.meta as
+              | { pagination?: { pageCount?: number; page?: number } }
+              | undefined;
+            if (meta?.pagination) {
+              const pageCount = meta.pagination.pageCount;
+              const currentPage = meta.pagination.page || page;
+              if (pageCount && currentPage >= pageCount) {
+                hasMore = false;
+              } else {
+                page++;
+              }
+            } else {
+              // If no pagination meta, try next page
+              page++;
+            }
+          }
+        } else {
+          hasMore = false;
+        }
+      } catch (error) {
+        console.error(`Error fetching page ${page}:`, error);
+        // If it's a 404 or empty response, we've reached the end
+        if (
+          error instanceof Error &&
+          (error.message.includes('404') || error.message.includes('Not Found'))
+        ) {
+          hasMore = false;
+        } else {
+          // For other errors, stop pagination to avoid infinite loops
+          console.warn(`Stopping pagination due to error on page ${page}`);
+          hasMore = false;
+        }
+      }
+    }
+
+    if (page > maxPages) {
+      console.warn(
+        `Reached maximum page limit (${maxPages}). There may be more venues available.`
+      );
+    }
+
+    console.log(
+      `✅ Pagination complete: Fetched ${allVenues.length} venues across ${
+        page - 1
+      } page(s)`
+    );
+    return allVenues;
   },
 
   getByProfile: async (

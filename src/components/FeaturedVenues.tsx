@@ -1,72 +1,189 @@
-import VenueCard from './VenueCard';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { venuesApi } from '../services/api';
 
-const featuredVenues = [
-  {
-    id: 1,
-    title: 'Luxury Beach Villa',
-    location: 'Malibu, California',
-    rating: 4.9,
-    price: 450,
-    image: 'beach-villa',
-  },
-  {
-    id: 2,
-    title: 'Modern City Apartment',
-    location: 'New York, NY',
-    rating: 4.9,
-    price: 180,
-    image: 'city-apartment',
-  },
-  {
-    id: 3,
-    title: 'Cozy Mountain Cabin',
-    location: 'Aspen, Colorado',
-    rating: 4.9,
-    price: 320,
-    image: 'mountain-cabin',
-  },
-];
+interface Venue {
+  id: string;
+  name: string;
+  location: string;
+  rating: number;
+  price: number;
+  images: string[];
+  maxGuests?: number;
+}
 
 const FeaturedVenues = () => {
+  const navigate = useNavigate();
+  const [topRatedVenues, setTopRatedVenues] = useState<Venue[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Transform API venue data to local Venue interface
+  const transformVenueData = (apiVenue: unknown): Venue | null => {
+    const venue = apiVenue as {
+      id?: string;
+      name?: string;
+      location?: {
+        address?: string;
+        city?: string;
+        country?: string;
+      };
+      price?: number;
+      maxGuests?: number;
+      rating?: number;
+      media?: Array<{ url?: string; alt?: string }>;
+    };
+
+    if (!venue.id || !venue.name) {
+      return null;
+    }
+
+    // Build location string from location object
+    const locationParts: string[] = [];
+    if (venue.location?.city) locationParts.push(venue.location.city);
+    if (venue.location?.country) locationParts.push(venue.location.country);
+    const locationString =
+      locationParts.length > 0
+        ? locationParts.join(', ')
+        : venue.location?.address || 'Unknown Location';
+
+    // Extract images from media array
+    const images =
+      venue.media?.map((m) => m.url || '').filter((url) => url !== '') || [];
+
+    return {
+      id: venue.id,
+      name: venue.name,
+      location: locationString,
+      price: venue.price || 0,
+      maxGuests: venue.maxGuests || 0,
+      rating: venue.rating || 0,
+      images:
+        images.length > 0
+          ? images
+          : ['https://via.placeholder.com/600x400?text=No+Image'],
+    };
+  };
+
+  // Fetch and filter 5-star venues
+  useEffect(() => {
+    const fetchTopRatedVenues = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch all venues across all pages
+        const allVenuesData = await venuesApi.getAllPaginated(false);
+
+        if (Array.isArray(allVenuesData)) {
+          // Transform all venues
+          const allVenues = allVenuesData
+            .map((venue) => transformVenueData(venue))
+            .filter((venue): venue is Venue => venue !== null);
+
+          // Filter for 5-star rated venues (rating >= 5)
+          const fiveStarVenues = allVenues.filter((venue) => venue.rating >= 5);
+
+          // Get 3 random venues from 5-star venues
+          const shuffled = [...fiveStarVenues].sort(() => 0.5 - Math.random());
+          const selected = shuffled.slice(0, 3);
+
+          setTopRatedVenues(selected);
+        }
+      } catch (err: unknown) {
+        console.error('Error fetching top rated venues:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTopRatedVenues();
+  }, []);
+
+  const handleVenueClick = (venueId: string) => {
+    navigate(`/venue/${venueId}`);
+  };
+
   return (
     <section className="w-full py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-[#e5e7eb4c]">
       <div className="max-w-[1200px] mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-8 sm:mb-10">
+        <div className="mb-8 sm:mb-10">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-holidaze-gray m-0 tracking-tight">
-            Featured Venues
+            Top Rated Accommodation
           </h2>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center w-full sm:w-auto">
-            <button className="py-2.5 px-5 bg-white text-holidaze-gray border border-holidaze-border rounded text-sm sm:text-[15px] font-medium cursor-pointer flex items-center justify-center gap-2 transition-all hover:bg-gray-100 w-full sm:w-auto">
-              <span className="text-base">⚙️</span>
-              Filters
-            </button>
-            <div className="relative w-full sm:w-auto">
-              <select
-                className="py-2.5 px-4 pr-9 border border-holidaze-border rounded text-sm sm:text-[15px] bg-white text-holidaze-gray appearance-none cursor-pointer w-full"
-                style={{
-                  backgroundImage:
-                    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")",
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 12px center',
-                }}>
-                <option>Sort by recommended</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Rating</option>
-              </select>
-            </div>
+          <p className="text-base text-holidaze-light-gray mt-2">
+            Discover our finest 5-star rated venues
+          </p>
+        </div>
+
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-lg text-holidaze-light-gray">
+              Loading top rated venues...
+            </p>
           </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
-          {featuredVenues.map((venue) => (
-            <VenueCard key={venue.id} venue={venue} />
-          ))}
-        </div>
-        <div className="flex justify-center">
-          <button className="py-3 px-6 sm:px-8 bg-white text-holidaze-gray border border-holidaze-border rounded text-sm sm:text-base font-medium cursor-pointer transition-all hover:bg-gray-100 hover:border-holidaze-gray w-full sm:w-auto">
-            Load More Venues
-          </button>
-        </div>
+        ) : topRatedVenues.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-lg text-holidaze-light-gray">
+              No 5-star rated venues available at the moment.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {topRatedVenues.map((venue) => (
+              <div
+                key={venue.id}
+                onClick={() => handleVenueClick(venue.id)}
+                className="bg-white rounded-lg overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-200 flex flex-col hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] cursor-pointer">
+                <div className="w-full aspect-[16/10] relative overflow-hidden">
+                  <img
+                    src={
+                      venue.images[0] ||
+                      'https://via.placeholder.com/600x400?text=No+Image'
+                    }
+                    alt={venue.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="p-5 flex flex-col gap-3">
+                  <h3 className="text-xl font-semibold text-holidaze-gray m-0">
+                    {venue.name}
+                  </h3>
+                  <p className="text-[15px] text-holidaze-light-gray m-0">
+                    {venue.location}
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1">
+                      <span className="text-base">⭐</span>
+                      <span className="text-[15px] font-medium text-holidaze-gray">
+                        {venue.rating > 0 ? venue.rating.toFixed(1) : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline">
+                      <span className="text-[22px] font-bold text-holidaze-gray">
+                        ${venue.price}
+                      </span>
+                      <span className="text-sm text-holidaze-light-gray ml-1">
+                        / night
+                      </span>
+                    </div>
+                  </div>
+                  {venue.maxGuests && venue.maxGuests > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-holidaze-light-gray">
+                        👥
+                      </span>
+                      <span className="text-sm text-holidaze-gray">
+                        Up to {venue.maxGuests} guests
+                      </span>
+                    </div>
+                  )}
+                  <button className="py-3 px-6 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-colors mt-2 hover:bg-holidaze-gray">
+                    View Details
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -135,11 +135,13 @@ const VenueDetails = () => {
             maxGuests: apiVenue.maxGuests || 0,
             description: apiVenue.description || 'No description available.',
             rating: apiVenue.rating || 0,
+            totalReviews: 0, // API doesn't provide this, set to 0
             amenities: amenities.length > 0 ? amenities : [],
             images:
               images.length > 0
                 ? images
                 : ['https://via.placeholder.com/1200x800?text=No+Image'],
+            reviews: undefined, // API doesn't provide reviews in venue data
           };
 
           setVenueData(transformedVenue);
@@ -290,9 +292,12 @@ const VenueDetails = () => {
                 <span className="text-lg font-semibold text-holidaze-gray">
                   {venueData.rating}
                 </span>
-                <span className="text-base text-holidaze-light-gray">
-                  ({venueData.totalReviews} reviews)
-                </span>
+                {venueData.totalReviews !== undefined &&
+                  venueData.totalReviews > 0 && (
+                    <span className="text-base text-holidaze-light-gray">
+                      ({venueData.totalReviews} reviews)
+                    </span>
+                  )}
               </div>
             </div>
 
@@ -404,9 +409,12 @@ const VenueDetails = () => {
                   <span className="text-xl font-bold text-holidaze-gray">
                     {venueData.rating}
                   </span>
-                  <span className="text-base text-holidaze-light-gray">
-                    ({venueData.totalReviews} reviews)
-                  </span>
+                  {venueData.totalReviews !== undefined &&
+                    venueData.totalReviews > 0 && (
+                      <span className="text-base text-holidaze-light-gray">
+                        ({venueData.totalReviews} reviews)
+                      </span>
+                    )}
                 </div>
               </div>
 

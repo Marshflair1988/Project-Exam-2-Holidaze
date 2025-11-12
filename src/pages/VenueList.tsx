@@ -26,6 +26,8 @@ const VenueList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
+  const [displayedVenues, setDisplayedVenues] = useState<Venue[]>([]);
+  const [venuesToShow, setVenuesToShow] = useState(30);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<string>('recommended');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -96,36 +98,45 @@ const VenueList = () => {
       price: venue.price || 0,
       maxGuests: venue.maxGuests || 0,
       rating: venue.rating || 0,
-      images: images.length > 0 ? images : ['https://via.placeholder.com/600x400?text=No+Image'],
+      images:
+        images.length > 0
+          ? images
+          : ['https://via.placeholder.com/600x400?text=No+Image'],
       description: venue.description,
       amenities: amenities.length > 0 ? amenities : undefined,
     };
   };
 
-  // Fetch all venues from API
+  // Fetch all venues from API (with pagination)
   useEffect(() => {
     const fetchVenues = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await venuesApi.getAll();
-        console.log('✅ Fetched venues:', response);
+        // Fetch all venues across all pages
+        console.log('🔄 Fetching all venues with pagination...');
+        const allVenuesData = await venuesApi.getAllPaginated(false);
+        console.log(
+          `✅ Fetched ${allVenuesData.length} venues across all pages`
+        );
 
-        if (response.data && Array.isArray(response.data)) {
-          const transformedVenues = response.data
+        if (Array.isArray(allVenuesData)) {
+          const transformedVenues = allVenuesData
             .map((venue) => transformVenueData(venue))
             .filter((venue): venue is Venue => venue !== null);
 
           setVenues(transformedVenues);
           setFilteredVenues(transformedVenues);
-          console.log('✅ Transformed venues:', transformedVenues);
+          console.log(`✅ Transformed ${transformedVenues.length} venues`);
         } else {
           throw new Error('Invalid response format from API');
         }
       } catch (err: unknown) {
         const errorMessage =
-          err instanceof Error ? err.message : 'Failed to load venues. Please try again.';
+          err instanceof Error
+            ? err.message
+            : 'Failed to load venues. Please try again.';
         console.error('❌ Error fetching venues:', err);
         setError(errorMessage);
       } finally {
@@ -185,8 +196,7 @@ const VenueList = () => {
     // Apply city filter
     if (filters.city.trim()) {
       filtered = filtered.filter(
-        (venue) =>
-          venue.city?.toLowerCase() === filters.city.toLowerCase()
+        (venue) => venue.city?.toLowerCase() === filters.city.toLowerCase()
       );
     }
 
@@ -218,6 +228,20 @@ const VenueList = () => {
 
     setFilteredVenues(sorted);
   }, [searchQuery, venues, sortBy, filters]);
+
+  // Update displayed venues when filtered venues or venuesToShow changes
+  useEffect(() => {
+    setDisplayedVenues(filteredVenues.slice(0, venuesToShow));
+  }, [filteredVenues, venuesToShow]);
+
+  // Reset displayed count when filters or search change
+  useEffect(() => {
+    setVenuesToShow(30);
+  }, [searchQuery, filters]);
+
+  const handleLoadMore = () => {
+    setVenuesToShow((prev) => prev + 30);
+  };
 
   const handleVenueClick = (venueId: string) => {
     navigate(`/venue/${venueId}`);
@@ -276,8 +300,14 @@ const VenueList = () => {
                   {isLoading
                     ? 'Loading venues...'
                     : filteredVenues.length === venues.length
-                      ? `Discover ${venues.length} amazing venues`
-                      : `Found ${filteredVenues.length} of ${venues.length} venues`}
+                    ? `Discover ${venues.length} amazing venues`
+                    : `Found ${filteredVenues.length} of ${venues.length} venues`}
+                  {!isLoading && displayedVenues.length > 0 && (
+                    <span className="ml-2">
+                      (Showing {displayedVenues.length} of{' '}
+                      {filteredVenues.length})
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center w-full sm:w-auto">
@@ -292,14 +322,16 @@ const VenueList = () => {
                   Filters
                   {hasActiveFilters() && (
                     <span className="ml-1 text-xs bg-black text-white rounded-full px-2 py-0.5">
-                      {[
-                        filters.minPrice > 0 || filters.maxPrice < 10000,
-                        filters.minRating > 0,
-                        filters.maxGuests > 0,
-                        filters.amenities.length > 0,
-                        filters.city.trim() !== '',
-                        filters.country.trim() !== '',
-                      ].filter(Boolean).length}
+                      {
+                        [
+                          filters.minPrice > 0 || filters.maxPrice < 10000,
+                          filters.minRating > 0,
+                          filters.maxGuests > 0,
+                          filters.amenities.length > 0,
+                          filters.city.trim() !== '',
+                          filters.country.trim() !== '',
+                        ].filter(Boolean).length
+                      }
                     </span>
                   )}
                 </button>
@@ -337,7 +369,9 @@ const VenueList = () => {
             {/* Loading State */}
             {isLoading && (
               <div className="text-center py-12">
-                <p className="text-lg text-holidaze-light-gray">Loading venues...</p>
+                <p className="text-lg text-holidaze-light-gray">
+                  Loading venues...
+                </p>
               </div>
             )}
 
@@ -354,93 +388,119 @@ const VenueList = () => {
             )}
 
             {/* No Venues Found */}
-            {!isLoading && !error && filteredVenues.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-lg text-holidaze-light-gray mb-4">
-                  {searchQuery
-                    ? 'No venues found matching your search.'
-                    : 'No venues available at the moment.'}
-                </p>
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
-                    Clear Search
-                  </button>
-                )}
-              </div>
-            )}
+            {!isLoading &&
+              !error &&
+              displayedVenues.length === 0 &&
+              filteredVenues.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-lg text-holidaze-light-gray mb-4">
+                    {searchQuery
+                      ? 'No venues found matching your search.'
+                      : 'No venues available at the moment.'}
+                  </p>
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                      Clear Search
+                    </button>
+                  )}
+                </div>
+              )}
 
             {/* Venues Grid */}
-            {!isLoading && !error && filteredVenues.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredVenues.map((venue) => (
-                  <div
-                    key={venue.id}
-                    onClick={() => handleVenueClick(venue.id)}
-                    className="bg-white border border-holidaze-border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer">
-                    <div className="w-full aspect-[16/10] relative overflow-hidden">
-                      <img
-                        src={venue.images[0] || 'https://via.placeholder.com/600x400?text=No+Image'}
-                        alt={venue.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="p-5">
-                      <h3 className="text-xl font-semibold text-holidaze-gray m-0 mb-1">
-                        {venue.name}
-                      </h3>
-                      <p className="text-[15px] text-holidaze-light-gray m-0 mb-3">
-                        {venue.location}
-                      </p>
-                      <div className="flex justify-between items-center mb-4">
-                        <div className="flex items-center gap-1">
-                          <span className="text-base">⭐</span>
-                          <span className="text-[15px] font-medium text-holidaze-gray">
-                            {venue.rating > 0 ? venue.rating.toFixed(1) : 'N/A'}
-                          </span>
-                        </div>
-                        <div className="flex items-baseline">
-                          <span className="text-[22px] font-bold text-holidaze-gray">
-                            ${venue.price}
-                          </span>
-                          <span className="text-sm text-holidaze-light-gray ml-1">
-                            / night
-                          </span>
-                        </div>
+            {!isLoading && !error && displayedVenues.length > 0 && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {displayedVenues.map((venue) => (
+                    <div
+                      key={venue.id}
+                      onClick={() => handleVenueClick(venue.id)}
+                      className="bg-white border border-holidaze-border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer">
+                      <div className="w-full aspect-[16/10] relative overflow-hidden">
+                        <img
+                          src={
+                            venue.images[0] ||
+                            'https://via.placeholder.com/600x400?text=No+Image'
+                          }
+                          alt={venue.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
                       </div>
-                      {venue.maxGuests > 0 && (
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-sm text-holidaze-light-gray">👥</span>
-                          <span className="text-sm text-holidaze-gray">
-                            Up to {venue.maxGuests} guests
-                          </span>
-                        </div>
-                      )}
-                      {venue.amenities && venue.amenities.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {venue.amenities.slice(0, 3).map((amenity, index) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 bg-gray-50 text-xs text-holidaze-gray rounded border border-holidaze-border">
-                              {amenity}
+                      <div className="p-5">
+                        <h3 className="text-xl font-semibold text-holidaze-gray m-0 mb-1">
+                          {venue.name}
+                        </h3>
+                        <p className="text-[15px] text-holidaze-light-gray m-0 mb-3">
+                          {venue.location}
+                        </p>
+                        <div className="flex justify-between items-center mb-4">
+                          <div className="flex items-center gap-1">
+                            <span className="text-base">⭐</span>
+                            <span className="text-[15px] font-medium text-holidaze-gray">
+                              {venue.rating > 0
+                                ? venue.rating.toFixed(1)
+                                : 'N/A'}
                             </span>
-                          ))}
-                          {venue.amenities.length > 3 && (
-                            <span className="px-2 py-1 bg-gray-50 text-xs text-holidaze-gray rounded border border-holidaze-border">
-                              +{venue.amenities.length - 3} more
+                          </div>
+                          <div className="flex items-baseline">
+                            <span className="text-[22px] font-bold text-holidaze-gray">
+                              ${venue.price}
                             </span>
-                          )}
+                            <span className="text-sm text-holidaze-light-gray ml-1">
+                              / night
+                            </span>
+                          </div>
                         </div>
-                      )}
-                      <button className="w-full py-3 px-6 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
-                        View Details
-                      </button>
+                        {venue.maxGuests > 0 && (
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-sm text-holidaze-light-gray">
+                              👥
+                            </span>
+                            <span className="text-sm text-holidaze-gray">
+                              Up to {venue.maxGuests} guests
+                            </span>
+                          </div>
+                        )}
+                        {venue.amenities && venue.amenities.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {venue.amenities
+                              .slice(0, 3)
+                              .map((amenity, index) => (
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 bg-gray-50 text-xs text-holidaze-gray rounded border border-holidaze-border">
+                                  {amenity}
+                                </span>
+                              ))}
+                            {venue.amenities.length > 3 && (
+                              <span className="px-2 py-1 bg-gray-50 text-xs text-holidaze-gray rounded border border-holidaze-border">
+                                +{venue.amenities.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <button className="w-full py-3 px-6 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                          View Details
+                        </button>
+                      </div>
                     </div>
+                  ))}
+                </div>
+
+                {/* Load More Button */}
+                {filteredVenues.length > venuesToShow && (
+                  <div className="flex justify-center mt-8">
+                    <button
+                      onClick={handleLoadMore}
+                      className="py-3 px-6 sm:px-8 bg-white text-holidaze-gray border border-holidaze-border rounded text-sm sm:text-base font-medium cursor-pointer transition-all hover:bg-gray-100 hover:border-holidaze-gray">
+                      Load More Venues ({filteredVenues.length - venuesToShow}{' '}
+                      remaining)
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         </section>
@@ -461,4 +521,3 @@ const VenueList = () => {
 };
 
 export default VenueList;
-

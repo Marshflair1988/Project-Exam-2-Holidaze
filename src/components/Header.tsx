@@ -95,61 +95,61 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full bg-white border-b border-holidaze-border shadow-sm sticky top-0 z-[1000]">
+    <header
+      className="w-full border-b border-white/20 shadow-sm sticky top-0 z-[1000]"
+      style={{ backgroundColor: '#87CEEB' }}>
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 sm:py-5">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link
             to="/"
-            className="text-xl sm:text-2xl font-semibold text-holidaze-gray tracking-tight no-underline hover:text-black transition-colors">
+            className="text-xl sm:text-2xl font-semibold text-white tracking-tight no-underline hover:text-gray-100 transition-colors">
             Holidaze
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
-            <Link
-              to="/venues"
-              className="text-holidaze-gray no-underline text-[15px] font-normal hover:text-black transition-colors">
-              Browse Venues
-            </Link>
-            <a
-              href="#"
-              className="text-holidaze-gray no-underline text-[15px] font-normal hover:text-black transition-colors">
-              Manage Venues
-            </a>
-            <a
-              href="#"
-              className="text-holidaze-gray no-underline text-[15px] font-normal hover:text-black transition-colors">
-              My Bookings
-            </a>
-          </nav>
-
           {/* Desktop Right Side */}
           <div className="hidden lg:flex items-center gap-4">
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                placeholder="Search for venues..."
-                className="py-2.5 pr-9 pl-4 border border-holidaze-border rounded text-sm w-[200px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray"
-              />
-              <span className="absolute right-3 text-base text-holidaze-light-gray">
-                🔍
-              </span>
-            </div>
+            {/* Navigation Links */}
+            <nav className="flex items-center gap-6">
+              <Link
+                to="/"
+                className="text-white no-underline text-[15px] font-normal hover:text-gray-100 transition-colors">
+                Home
+              </Link>
+              <Link
+                to="/venues"
+                className="text-white no-underline text-[15px] font-normal hover:text-gray-100 transition-colors">
+                Browse Venues
+              </Link>
+              {user && user.venueManager && (
+                <Link
+                  to="/venue-manager/dashboard"
+                  className="text-white no-underline text-[15px] font-normal hover:text-gray-100 transition-colors">
+                  Manage Venues
+                </Link>
+              )}
+              {user && !user.venueManager && (
+                <Link
+                  to="/user/profile"
+                  className="text-white no-underline text-[15px] font-normal hover:text-gray-100 transition-colors">
+                  My Bookings
+                </Link>
+              )}
+            </nav>
             {user ? (
               <div className="relative user-menu-container">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-3 py-2 px-3 rounded cursor-pointer transition-all hover:bg-gray-100">
+                  className="flex items-center gap-3 py-2 px-3 rounded cursor-pointer transition-all hover:bg-white/20">
                   <img
                     src={
                       user.avatar?.url ||
                       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop'
                     }
                     alt={user.avatar?.alt || user.name}
-                    className="w-8 h-8 rounded-full object-cover border border-holidaze-border"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-white"
                   />
-                  <span className="text-[15px] font-medium text-holidaze-gray">
+                  <span className="text-[15px] font-medium text-white">
                     {user.name}
                   </span>
                 </button>
@@ -157,7 +157,11 @@ const Header = () => {
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-holidaze-border rounded-lg shadow-lg z-50">
                     <div className="py-2">
                       <Link
-                        to={user.venueManager ? '/venue-manager/dashboard' : '/user/profile'}
+                        to={
+                          user.venueManager
+                            ? '/venue-manager/dashboard'
+                            : '/user/profile'
+                        }
                         onClick={() => setIsUserMenuOpen(false)}
                         className="block px-4 py-2 text-sm text-holidaze-gray hover:bg-gray-100 no-underline">
                         {user.venueManager ? 'Dashboard' : 'My Profile'}
@@ -175,12 +179,12 @@ const Header = () => {
               <>
                 <button
                   onClick={() => setIsUserLoginOpen(true)}
-                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100">
+                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-[#87CEEB] border-none hover:bg-gray-100">
                   Sign In
                 </button>
                 <button
                   onClick={() => setIsUserRegisterOpen(true)}
-                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100">
+                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-[#87CEEB] border border-white hover:bg-gray-100">
                   Register
                 </button>
               </>
@@ -193,16 +197,16 @@ const Header = () => {
               <div className="relative user-menu-container">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 py-2 px-3 rounded cursor-pointer transition-all hover:bg-gray-100">
+                  className="flex items-center gap-2 py-2 px-3 rounded cursor-pointer transition-all hover:bg-white/20">
                   <img
                     src={
                       user.avatar?.url ||
                       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop'
                     }
                     alt={user.avatar?.alt || user.name}
-                    className="w-8 h-8 rounded-full object-cover border border-holidaze-border"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-white"
                   />
-                  <span className="text-xs sm:text-sm font-medium text-holidaze-gray">
+                  <span className="text-xs sm:text-sm font-medium text-white">
                     {user.name}
                   </span>
                 </button>
@@ -210,7 +214,11 @@ const Header = () => {
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-holidaze-border rounded-lg shadow-lg z-50">
                     <div className="py-2">
                       <Link
-                        to={user.venueManager ? '/venue-manager/dashboard' : '/user/profile'}
+                        to={
+                          user.venueManager
+                            ? '/venue-manager/dashboard'
+                            : '/user/profile'
+                        }
                         onClick={() => setIsUserMenuOpen(false)}
                         className="block px-4 py-2 text-sm text-holidaze-gray hover:bg-gray-100 no-underline">
                         {user.venueManager ? 'Dashboard' : 'My Profile'}
@@ -228,12 +236,12 @@ const Header = () => {
               <>
                 <button
                   onClick={() => setIsUserLoginOpen(true)}
-                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border-none hover:bg-gray-100 whitespace-nowrap">
+                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-[#87CEEB] border-none hover:bg-gray-100 whitespace-nowrap">
                   Sign In
                 </button>
                 <button
                   onClick={() => setIsUserRegisterOpen(true)}
-                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-holidaze-gray border border-holidaze-gray hover:bg-gray-100 whitespace-nowrap">
+                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-[#87CEEB] border border-white hover:bg-gray-100 whitespace-nowrap">
                   Register
                 </button>
               </>
@@ -244,15 +252,15 @@ const Header = () => {
               className="flex flex-col gap-1.5 p-2 focus:outline-none"
               aria-label="Toggle menu">
               <span
-                className={`block h-0.5 w-6 bg-holidaze-gray transition-all duration-300 ${
+                className={`block h-0.5 w-6 bg-white transition-all duration-300 ${
                   isMenuOpen ? 'rotate-45 translate-y-2' : ''
                 }`}></span>
               <span
-                className={`block h-0.5 w-6 bg-holidaze-gray transition-all duration-300 ${
+                className={`block h-0.5 w-6 bg-white transition-all duration-300 ${
                   isMenuOpen ? 'opacity-0' : ''
                 }`}></span>
               <span
-                className={`block h-0.5 w-6 bg-holidaze-gray transition-all duration-300 ${
+                className={`block h-0.5 w-6 bg-white transition-all duration-300 ${
                   isMenuOpen ? '-rotate-45 -translate-y-2' : ''
                 }`}></span>
             </button>
@@ -264,37 +272,37 @@ const Header = () => {
           className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
             isMenuOpen ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'
           }`}>
-          <div className="flex flex-col gap-4 pb-4 border-t border-holidaze-border mt-4 pt-4">
+          <div className="flex flex-col gap-4 pb-4 border-t border-white/20 mt-4 pt-4">
             <nav className="flex flex-col gap-4">
+              <Link
+                to="/"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-white no-underline text-base font-normal hover:text-gray-100 transition-colors py-2">
+                Home
+              </Link>
               <Link
                 to="/venues"
                 onClick={() => setIsMenuOpen(false)}
-                className="text-holidaze-gray no-underline text-base font-normal hover:text-black transition-colors py-2">
+                className="text-white no-underline text-base font-normal hover:text-gray-100 transition-colors py-2">
                 Browse Venues
               </Link>
-              <a
-                href="#"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-holidaze-gray no-underline text-base font-normal hover:text-black transition-colors py-2">
-                Manage Venues
-              </a>
-              <a
-                href="#"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-holidaze-gray no-underline text-base font-normal hover:text-black transition-colors py-2">
-                My Bookings
-              </a>
+              {user && user.venueManager && (
+                <Link
+                  to="/venue-manager/dashboard"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-white no-underline text-base font-normal hover:text-gray-100 transition-colors py-2">
+                  Manage Venues
+                </Link>
+              )}
+              {user && !user.venueManager && (
+                <Link
+                  to="/user/profile"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-white no-underline text-base font-normal hover:text-gray-100 transition-colors py-2">
+                  My Bookings
+                </Link>
+              )}
             </nav>
-            <div className="relative flex items-center pt-2">
-              <input
-                type="text"
-                placeholder="Search for venues..."
-                className="py-2.5 pr-9 pl-4 border border-holidaze-border rounded text-sm w-full bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray"
-              />
-              <span className="absolute right-3 text-base text-holidaze-light-gray">
-                🔍
-              </span>
-            </div>
           </div>
         </div>
       </div>
