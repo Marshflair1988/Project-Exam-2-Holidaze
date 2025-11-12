@@ -107,11 +107,11 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
-            <a
-              href="#"
+            <Link
+              to="/venues"
               className="text-holidaze-gray no-underline text-[15px] font-normal hover:text-black transition-colors">
               Browse Venues
-            </a>
+            </Link>
             <a
               href="#"
               className="text-holidaze-gray no-underline text-[15px] font-normal hover:text-black transition-colors">
@@ -266,12 +266,12 @@ const Header = () => {
           }`}>
           <div className="flex flex-col gap-4 pb-4 border-t border-holidaze-border mt-4 pt-4">
             <nav className="flex flex-col gap-4">
-              <a
-                href="#"
+              <Link
+                to="/venues"
                 onClick={() => setIsMenuOpen(false)}
                 className="text-holidaze-gray no-underline text-base font-normal hover:text-black transition-colors py-2">
                 Browse Venues
-              </a>
+              </Link>
               <a
                 href="#"
                 onClick={() => setIsMenuOpen(false)}

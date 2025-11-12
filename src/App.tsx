@@ -7,6 +7,7 @@ import VenueManagerRegister from './pages/VenueManagerRegister';
 import VenueDetails from './pages/VenueDetails';
 import VenueManagerDashboard from './pages/VenueManagerDashboard';
 import UserProfile from './pages/UserProfile';
+import VenueList from './pages/VenueList';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           path="/register/venue-manager"
           element={<VenueManagerRegister />}
         />
+        <Route path="/venues" element={<VenueList />} />
         <Route path="/venue/:id" element={<VenueDetails />} />
         <Route
           path="/venue-manager/dashboard"
