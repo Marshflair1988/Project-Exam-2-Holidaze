@@ -393,18 +393,7 @@ export const profilesApi = {
 
 // Bookings API calls
 export const bookingsApi = {
-  getAll: async (): Promise<ApiResponse<unknown[]>> => {
-    return apiCall<unknown[]>('/holidaze/bookings');
-  },
-
   getByVenue: async (venueId: string): Promise<ApiResponse<unknown[]>> => {
     return apiCall<unknown[]>(`/holidaze/venues/${venueId}?_bookings=true`);
-  },
-
-  create: async (data: unknown): Promise<ApiResponse<unknown>> => {
-    return apiCall<unknown>('/holidaze/bookings', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
   },
 };

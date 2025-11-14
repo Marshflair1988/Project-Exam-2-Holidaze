@@ -144,7 +144,7 @@ const FeaturedVenues = () => {
                     aria-hidden="true"
                   />
                 </div>
-                <div className="p-5 flex flex-col gap-3">
+                <div className="p-5 flex flex-col gap-3 flex-1">
                   <h3 className="text-xl font-semibold text-holidaze-gray m-0">
                     {venue.name}
                   </h3>
@@ -177,7 +177,7 @@ const FeaturedVenues = () => {
                       </span>
                     </div>
                   )}
-                  <span className="py-3 px-6 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium text-center block mt-2">
+                  <span className="py-3 px-6 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium text-center block mt-auto">
                     View Details
                   </span>
                 </div>

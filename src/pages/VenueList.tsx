@@ -424,7 +424,7 @@ const VenueList = () => {
                     <div
                       key={venue.id}
                       onClick={() => handleVenueClick(venue.id)}
-                      className="bg-white border border-holidaze-border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer">
+                      className="bg-white border border-holidaze-border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer flex flex-col">
                       <div className="w-full aspect-[16/10] relative overflow-hidden">
                         <img
                           src={
@@ -437,7 +437,7 @@ const VenueList = () => {
                           aria-hidden="true"
                         />
                       </div>
-                      <div className="p-5">
+                      <div className="p-5 flex flex-col flex-1">
                         <h3 className="text-xl font-semibold text-holidaze-gray m-0 mb-1">
                           {venue.name}
                         </h3>
@@ -490,7 +490,7 @@ const VenueList = () => {
                             )}
                           </div>
                         )}
-                        <button className="w-full py-3 px-6 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
+                        <button className="w-full py-3 px-6 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90 mt-auto">
                           View Details
                         </button>
                       </div>

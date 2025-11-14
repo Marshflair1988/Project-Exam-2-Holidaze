@@ -37,7 +37,7 @@ const VenueCard = ({ venue }: VenueCardProps) => {
           aria-hidden="true"
         />
       </div>
-      <div className="p-5 flex flex-col gap-3">
+      <div className="p-5 flex flex-col gap-3 flex-1">
         <h3 className="text-xl font-semibold text-holidaze-gray m-0">
           {venue.title}
         </h3>
@@ -67,7 +67,7 @@ const VenueCard = ({ venue }: VenueCardProps) => {
         </div>
         <Link
           to={`/venue/${venue.id}`}
-          className="py-3 px-6 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all mt-2 hover:opacity-90 no-underline text-center block">
+          className="py-3 px-6 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all mt-auto hover:opacity-90 no-underline text-center block">
           View Details
         </Link>
       </div>

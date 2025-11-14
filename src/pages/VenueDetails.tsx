@@ -6,7 +6,6 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BookingFormModal from '../components/BookingFormModal';
 import BookingConfirmationModal from '../components/BookingConfirmationModal';
-import AvailabilityCalendar from '../components/AvailabilityCalendar';
 import { venuesApi, bookingsApi } from '../services/api';
 
 interface VenueData {
@@ -64,7 +63,6 @@ const VenueDetails = () => {
   // Fetch venue data from API
   const [venueData, setVenueData] = useState<VenueData | null>(null);
   const [bookings, setBookings] = useState<Array<{ dateFrom: string; dateTo: string }>>([]);
-  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 
   // Fetch bookings separately if not included in venue response
   useEffect(() => {
@@ -76,8 +74,6 @@ const VenueDetails = () => {
         console.log('📅 Using bookings from venue response:', bookings.length);
         return;
       }
-
-      setIsLoadingBookings(true);
       try {
         // Try to fetch bookings separately - the API might return bookings in the venue data
         // or we might need to fetch from a different endpoint
@@ -131,14 +127,13 @@ const VenueDetails = () => {
         console.log('⚠️ Could not fetch bookings (may require authentication):', err);
         // If bookings require auth and user is not logged in, that's okay
         // Calendar will just show all dates as available
-      } finally {
-        setIsLoadingBookings(false);
       }
     };
 
     if (venueData) {
       fetchBookings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, venueData]);
 
   useEffect(() => {
