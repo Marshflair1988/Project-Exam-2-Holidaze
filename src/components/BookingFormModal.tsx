@@ -23,6 +23,11 @@ interface BookingFormModalProps {
   }) => void;
   availableVenues: Venue[];
   selectedVenue?: Venue | null;
+  preSelectedDates?: {
+    checkIn: Date | null;
+    checkOut: Date | null;
+    guests?: number;
+  };
 }
 
 const BookingFormModal = ({
@@ -31,6 +36,7 @@ const BookingFormModal = ({
   onSave,
   availableVenues,
   selectedVenue,
+  preSelectedDates,
 }: BookingFormModalProps) => {
   const [formData, setFormData] = useState({
     venueId: '',
@@ -46,21 +52,21 @@ const BookingFormModal = ({
       if (selectedVenue) {
         setFormData({
           venueId: selectedVenue.id,
-          checkIn: null,
-          checkOut: null,
-          guests: 1,
+          checkIn: preSelectedDates?.checkIn || null,
+          checkOut: preSelectedDates?.checkOut || null,
+          guests: preSelectedDates?.guests || 1,
         });
       } else {
         setFormData({
           venueId: '',
-          checkIn: null,
-          checkOut: null,
-          guests: 1,
+          checkIn: preSelectedDates?.checkIn || null,
+          checkOut: preSelectedDates?.checkOut || null,
+          guests: preSelectedDates?.guests || 1,
         });
       }
       setErrors({});
     }
-  }, [isOpen, selectedVenue]);
+  }, [isOpen, selectedVenue, preSelectedDates]);
 
   useEffect(() => {
     if (isOpen) {
@@ -148,7 +154,7 @@ const BookingFormModal = ({
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-holidaze-border px-6 py-4 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-holidaze-gray m-0">
-            Create New Booking
+            Confirm Booking
           </h2>
           <button
             onClick={onClose}
@@ -348,8 +354,8 @@ const BookingFormModal = ({
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
-              Create Booking
+              className="flex-1 py-2.5 px-5 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
+              Book Now
             </button>
           </div>
         </form>

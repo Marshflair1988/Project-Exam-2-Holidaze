@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BookingFormModal from '../components/BookingFormModal';
 import BookingConfirmationModal from '../components/BookingConfirmationModal';
-import { venuesApi } from '../services/api';
+import AvailabilityCalendar from '../components/AvailabilityCalendar';
+import { venuesApi, bookingsApi } from '../services/api';
 
 interface VenueData {
   id: string;
@@ -45,6 +48,9 @@ const VenueDetails = () => {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [checkInDate, setCheckInDate] = useState<Date | null>(null);
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
+  const [guests, setGuests] = useState(1);
   const [confirmedBooking, setConfirmedBooking] = useState<{
     venueName: string;
     venueImage: string;
@@ -57,6 +63,83 @@ const VenueDetails = () => {
 
   // Fetch venue data from API
   const [venueData, setVenueData] = useState<VenueData | null>(null);
+  const [bookings, setBookings] = useState<Array<{ dateFrom: string; dateTo: string }>>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+
+  // Fetch bookings separately if not included in venue response
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!id) return;
+
+      // If we already have bookings from venue response, don't fetch again
+      if (bookings.length > 0) {
+        console.log('📅 Using bookings from venue response:', bookings.length);
+        return;
+      }
+
+      setIsLoadingBookings(true);
+      try {
+        // Try to fetch bookings separately - the API might return bookings in the venue data
+        // or we might need to fetch from a different endpoint
+        const bookingsResponse = await bookingsApi.getByVenue(id);
+        console.log('📅 Bookings API response:', bookingsResponse);
+        
+        if (bookingsResponse.data) {
+          // Check if response.data is an array of bookings or a venue object with bookings
+          let bookingsArray: unknown[] = [];
+          
+          if (Array.isArray(bookingsResponse.data)) {
+            bookingsArray = bookingsResponse.data;
+          } else {
+            // If it's a venue object, check for bookings property
+            const venueData = bookingsResponse.data as { bookings?: unknown[] };
+            if (venueData.bookings && Array.isArray(venueData.bookings)) {
+              bookingsArray = venueData.bookings;
+            }
+          }
+          
+          if (bookingsArray.length > 0) {
+            const validBookings = bookingsArray
+              .filter(
+                (b: unknown) => {
+                  const booking = b as { dateFrom?: string; dateTo?: string };
+                  return (
+                    booking.dateFrom &&
+                    booking.dateTo &&
+                    typeof booking.dateFrom === 'string' &&
+                    typeof booking.dateTo === 'string'
+                  );
+                }
+              )
+              .map((b: unknown) => {
+                const booking = b as { dateFrom: string; dateTo: string };
+                return {
+                  dateFrom: booking.dateFrom,
+                  dateTo: booking.dateTo,
+                };
+              });
+            setBookings(validBookings);
+            console.log('✅ Fetched bookings separately:', validBookings);
+            console.log('📅 Total bookings found:', validBookings.length);
+          } else {
+            console.log('⚠️ No bookings found in API response');
+          }
+        } else {
+          console.log('⚠️ No bookings data in API response');
+        }
+      } catch (err) {
+        console.log('⚠️ Could not fetch bookings (may require authentication):', err);
+        // If bookings require auth and user is not logged in, that's okay
+        // Calendar will just show all dates as available
+      } finally {
+        setIsLoadingBookings(false);
+      }
+    };
+
+    if (venueData) {
+      fetchBookings();
+    }
+  }, [id, venueData]);
 
   useEffect(() => {
     const fetchVenue = async () => {
@@ -87,6 +170,7 @@ const VenueDetails = () => {
             rating?: number;
             media?: Array<{ url?: string; alt?: string }>;
             description?: string;
+            bookings?: Array<{ dateFrom?: string; dateTo?: string }>;
             meta?: {
               wifi?: boolean;
               parking?: boolean;
@@ -95,6 +179,25 @@ const VenueDetails = () => {
               [key: string]: unknown;
             };
           };
+
+          // Extract bookings from venue response if available
+          if (apiVenue.bookings && Array.isArray(apiVenue.bookings)) {
+            const validBookings = apiVenue.bookings
+              .filter(
+                (b) =>
+                  b.dateFrom &&
+                  b.dateTo &&
+                  typeof b.dateFrom === 'string' &&
+                  typeof b.dateTo === 'string'
+              )
+              .map((b) => ({
+                dateFrom: b.dateFrom!,
+                dateTo: b.dateTo!,
+              }));
+            setBookings(validBookings);
+            console.log('✅ Fetched bookings from venue response:', validBookings);
+            console.log('📅 Total bookings found:', validBookings.length);
+          }
 
           if (!apiVenue.id || !apiVenue.name) {
             throw new Error('Invalid venue data received from API');
@@ -164,7 +267,58 @@ const VenueDetails = () => {
   }, [id]);
 
   const handleBookNow = () => {
+    if (!checkInDate || !checkOutDate) {
+      // If dates not selected, alert user
+      alert('Please select both check-in and check-out dates');
+      return;
+    }
     setIsBookingFormOpen(true);
+  };
+
+  // Get booked dates for date picker exclusion
+  const getBookedDates = (): Date[] => {
+    const booked: Date[] = [];
+    bookings.forEach((booking) => {
+      const start = new Date(booking.dateFrom);
+      const end = new Date(booking.dateTo);
+      const current = new Date(start);
+      // Reset time to midnight for accurate date comparison
+      current.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
+      
+      while (current <= end) {
+        booked.push(new Date(current));
+        current.setDate(current.getDate() + 1);
+      }
+    });
+    console.log('📅 Booked dates for exclusion:', booked.map(d => d.toISOString().split('T')[0]));
+    return booked;
+  };
+
+  const isDateBooked = (date: Date): boolean => {
+    // Normalize date to midnight for comparison
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    return bookings.some((booking) => {
+      const start = new Date(booking.dateFrom);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(booking.dateTo);
+      end.setHours(23, 59, 59, 999);
+      
+      return checkDate >= start && checkDate <= end;
+    });
+  };
+
+  const handleDateSelect = (date: Date | null, isCheckIn: boolean) => {
+    if (isCheckIn) {
+      setCheckInDate(date);
+      if (checkOutDate && date && checkOutDate <= date) {
+        setCheckOutDate(null);
+      }
+    } else {
+      setCheckOutDate(date);
+    }
   };
 
   const handleSaveBooking = (bookingData: {
@@ -194,6 +348,10 @@ const VenueDetails = () => {
 
     setIsBookingFormOpen(false);
     setIsConfirmationOpen(true);
+    // Reset dates after booking
+    setCheckInDate(null);
+    setCheckOutDate(null);
+    setGuests(1);
   };
 
   // Show loading state
@@ -256,7 +414,7 @@ const VenueDetails = () => {
 
             {/* Thumbnail Gallery */}
             {venueData.images.length > 1 && (
-              <div className="grid grid-cols-5 gap-2 sm:gap-4">
+              <div className="grid grid-cols-5 gap-2 sm:gap-4 mb-6">
                 {venueData.images.map((image, index) => (
                   <button
                     key={index}
@@ -276,20 +434,16 @@ const VenueDetails = () => {
                 ))}
               </div>
             )}
-          </div>
-        </section>
 
-        {/* Venue Info Section */}
-        <section className="w-full py-8 sm:py-12 px-4 sm:px-6 bg-white">
-          <div className="max-w-[1200px] mx-auto">
+            {/* Venue Name */}
             <div className="mb-6">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-holidaze-gray m-0 mb-2 tracking-tight">
                 {venueData.name}
               </h1>
-              <p className="text-base sm:text-lg text-holidaze-light-gray m-0">
+              <p className="text-base sm:text-lg text-holidaze-light-gray m-0 mb-3">
                 {venueData.location}
               </p>
-              <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center gap-2">
                 <span className="text-xl">⭐</span>
                 <span className="text-lg font-semibold text-holidaze-gray">
                   {venueData.rating}
@@ -302,6 +456,12 @@ const VenueDetails = () => {
                   )}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Venue Info Section */}
+        <section className="w-full py-8 sm:py-12 px-4 sm:px-6 bg-white">
+          <div className="max-w-[1200px] mx-auto">
 
             {/* Description */}
             <div className="mb-8">
@@ -332,20 +492,97 @@ const VenueDetails = () => {
               </div>
             </div>
 
+
             {/* Book Now Section */}
             <div className="bg-gray-50 border border-holidaze-border rounded-lg p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-holidaze-gray m-0 mb-2">
-                    Ready to book?
-                  </h3>
-                  <p className="text-base text-holidaze-light-gray m-0">
-                    Reserve your stay at {venueData.name}
-                  </p>
+              <div className="mb-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-holidaze-gray m-0 mb-2">
+                  Ready to book?
+                </h3>
+                <p className="text-base text-holidaze-light-gray m-0">
+                  Reserve your stay at {venueData.name}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="venue-checkin"
+                    className="text-sm font-medium text-holidaze-gray">
+                    Check-in
+                  </label>
+                  <DatePicker
+                    id="venue-checkin"
+                    selected={checkInDate}
+                    onChange={(date: Date | null) => handleDateSelect(date, true)}
+                    selectsStart
+                    startDate={checkInDate}
+                    endDate={checkOutDate}
+                    minDate={new Date()}
+                    excludeDates={getBookedDates()}
+                    filterDate={(date) => !isDateBooked(date)}
+                    placeholderText="Select check-in"
+                    dateFormat="MM/dd/yyyy"
+                    className="py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full placeholder:text-holidaze-lighter-gray"
+                    wrapperClassName="w-full"
+                    aria-label="Check-in date"
+                  />
                 </div>
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="venue-checkout"
+                    className="text-sm font-medium text-holidaze-gray">
+                    Check-out
+                  </label>
+                  <DatePicker
+                    id="venue-checkout"
+                    selected={checkOutDate}
+                    onChange={(date: Date | null) => handleDateSelect(date, false)}
+                    selectsEnd
+                    startDate={checkInDate}
+                    endDate={checkOutDate}
+                    minDate={checkInDate || new Date()}
+                    excludeDates={getBookedDates()}
+                    filterDate={(date) => !isDateBooked(date)}
+                    placeholderText="Select check-out"
+                    dateFormat="MM/dd/yyyy"
+                    className="py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full placeholder:text-holidaze-lighter-gray"
+                    wrapperClassName="w-full"
+                    aria-label="Check-out date"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="venue-guests"
+                    className="text-sm font-medium text-holidaze-gray">
+                    Guests
+                  </label>
+                  <select
+                    id="venue-guests"
+                    value={guests}
+                    onChange={(e) => setGuests(parseInt(e.target.value))}
+                    className="py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full">
+                    {Array.from({ length: venueData.maxGuests }, (_, i) => i + 1).map(
+                      (num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? 'guest' : 'guests'}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+              </div>
+
+
+              <div className="flex justify-end">
                 <button
                   onClick={handleBookNow}
-                  className="py-3 px-8 bg-black text-white border-none rounded text-base sm:text-lg font-medium cursor-pointer transition-all hover:bg-holidaze-gray whitespace-nowrap">
+                  disabled={!checkInDate || !checkOutDate}
+                  className={`py-3 px-8 border-none rounded text-base sm:text-lg font-medium cursor-pointer transition-all whitespace-nowrap ${
+                    checkInDate && checkOutDate
+                      ? 'bg-[#0369a1] text-white hover:opacity-90'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}>
                   Book Now
                 </button>
               </div>
@@ -519,6 +756,11 @@ const VenueDetails = () => {
           maxGuests: venueData.maxGuests,
           rating: venueData.rating,
           images: venueData.images,
+        }}
+        preSelectedDates={{
+          checkIn: checkInDate,
+          checkOut: checkOutDate,
+          guests: guests,
         }}
       />
 
