@@ -197,11 +197,14 @@ const VenueFormModal = ({
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-holidaze-gray mb-2">
+              <label
+                htmlFor="venue-name"
+                className="block text-sm font-medium text-holidaze-gray mb-2">
                 Venue Name *
               </label>
               <input
                 type="text"
+                id="venue-name"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
@@ -217,11 +220,14 @@ const VenueFormModal = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-holidaze-gray mb-2">
+              <label
+                htmlFor="venue-location"
+                className="block text-sm font-medium text-holidaze-gray mb-2">
                 Location *
               </label>
               <input
                 type="text"
+                id="venue-location"
                 value={formData.location}
                 onChange={(e) =>
                   setFormData({ ...formData, location: e.target.value })
@@ -238,11 +244,14 @@ const VenueFormModal = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-holidaze-gray mb-2">
+                <label
+                  htmlFor="venue-price"
+                  className="block text-sm font-medium text-holidaze-gray mb-2">
                   Price per Night ($) *
                 </label>
                 <input
                   type="number"
+                  id="venue-price"
                   min="0"
                   step="0.01"
                   value={formData.price}
@@ -260,11 +269,14 @@ const VenueFormModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-holidaze-gray mb-2">
+                <label
+                  htmlFor="venue-max-guests"
+                  className="block text-sm font-medium text-holidaze-gray mb-2">
                   Maximum Guests *
                 </label>
                 <input
                   type="number"
+                  id="venue-max-guests"
                   min="1"
                   value={formData.maxGuests}
                   onChange={(e) =>
@@ -295,8 +307,12 @@ const VenueFormModal = ({
                 {formData.images.map((img, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className="flex-1">
+                      <label htmlFor={`venue-image-${index}`} className="sr-only">
+                        Image URL {index + 1}
+                      </label>
                       <input
                         type="url"
+                        id={`venue-image-${index}`}
                         value={img}
                         onChange={(e) =>
                           handleImageChange(index, e.target.value)
@@ -352,10 +368,13 @@ const VenueFormModal = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-holidaze-gray mb-2">
+              <label
+                htmlFor="venue-description"
+                className="block text-sm font-medium text-holidaze-gray mb-2">
                 Description
               </label>
               <textarea
+                id="venue-description"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })

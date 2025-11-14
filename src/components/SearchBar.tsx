@@ -134,13 +134,16 @@ const SearchBar = () => {
     <section className="w-full py-6 sm:py-10 px-4 sm:px-6 bg-white">
       <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row gap-4 items-end">
         <div className="flex-1 flex flex-col gap-2 w-full sm:w-auto relative">
-          <label className="text-sm font-medium text-holidaze-gray">
+          <label
+            htmlFor="search-location"
+            className="text-sm font-medium text-holidaze-gray">
             Location
           </label>
           <div className="relative">
             <input
               ref={inputRef}
               type="text"
+              id="search-location"
               value={location}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
@@ -176,10 +179,13 @@ const SearchBar = () => {
           </div>
         </div>
         <div className="flex-1 flex flex-col gap-2 w-full sm:w-auto">
-          <label className="text-sm font-medium text-holidaze-gray">
+          <label
+            htmlFor="search-checkin"
+            className="text-sm font-medium text-holidaze-gray">
             Check-in
           </label>
           <DatePicker
+            id="search-checkin"
             selected={checkInDate}
             onChange={(date: Date | null) => setCheckInDate(date)}
             selectsStart
@@ -190,13 +196,17 @@ const SearchBar = () => {
             dateFormat="MM/dd/yyyy"
             className="py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full placeholder:text-holidaze-lighter-gray"
             wrapperClassName="w-full"
+            aria-label="Check-in date"
           />
         </div>
         <div className="flex-1 flex flex-col gap-2 w-full sm:w-auto">
-          <label className="text-sm font-medium text-holidaze-gray">
+          <label
+            htmlFor="search-checkout"
+            className="text-sm font-medium text-holidaze-gray">
             Check-out
           </label>
           <DatePicker
+            id="search-checkout"
             selected={checkOutDate}
             onChange={(date: Date | null) => setCheckOutDate(date)}
             selectsEnd
@@ -207,14 +217,18 @@ const SearchBar = () => {
             dateFormat="MM/dd/yyyy"
             className="py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full placeholder:text-holidaze-lighter-gray"
             wrapperClassName="w-full"
+            aria-label="Check-out date"
           />
         </div>
         <div className="flex-1 flex flex-col gap-2 w-full sm:w-auto">
-          <label className="text-sm font-medium text-holidaze-gray">
+          <label
+            htmlFor="search-guests"
+            className="text-sm font-medium text-holidaze-gray">
             Guests
           </label>
           <div className="relative">
             <select
+              id="search-guests"
               className="py-3 px-4 pr-9 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full appearance-none cursor-pointer"
               style={{
                 backgroundImage:

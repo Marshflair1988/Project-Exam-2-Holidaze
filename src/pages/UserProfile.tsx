@@ -523,11 +523,14 @@ const UserProfile = () => {
 
                   <div className="flex-1 space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-holidaze-gray mb-2">
+                      <label
+                        htmlFor="profile-name"
+                        className="block text-sm font-medium text-holidaze-gray mb-2">
                         Name
                       </label>
                       <input
                         type="text"
+                        id="profile-name"
                         value={profileData.name}
                         onChange={(e) =>
                           setProfileData({
@@ -539,11 +542,14 @@ const UserProfile = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-holidaze-gray mb-2">
+                      <label
+                        htmlFor="profile-email"
+                        className="block text-sm font-medium text-holidaze-gray mb-2">
                         Email
                       </label>
                       <input
                         type="email"
+                        id="profile-email"
                         value={profileData.email}
                         onChange={(e) =>
                           setProfileData({

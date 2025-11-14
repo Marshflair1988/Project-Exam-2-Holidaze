@@ -133,11 +133,14 @@ const VenueFilterModal = ({
             </label>
             <div className="flex gap-4 items-center">
               <div className="flex-1">
-                <label className="block text-xs text-holidaze-light-gray mb-1">
+                <label
+                  htmlFor="filter-min-price"
+                  className="block text-xs text-holidaze-light-gray mb-1">
                   Min Price
                 </label>
                 <input
                   type="number"
+                  id="filter-min-price"
                   min="0"
                   value={minPrice || ''}
                   onChange={(e) => setMinPrice(Number(e.target.value) || 0)}
@@ -147,11 +150,14 @@ const VenueFilterModal = ({
               </div>
               <span className="text-holidaze-light-gray mt-6">-</span>
               <div className="flex-1">
-                <label className="block text-xs text-holidaze-light-gray mb-1">
+                <label
+                  htmlFor="filter-max-price"
+                  className="block text-xs text-holidaze-light-gray mb-1">
                   Max Price
                 </label>
                 <input
                   type="number"
+                  id="filter-max-price"
                   min="0"
                   value={maxPrice || ''}
                   onChange={(e) => setMaxPrice(Number(e.target.value) || 10000)}
@@ -186,11 +192,14 @@ const VenueFilterModal = ({
 
           {/* Max Guests */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-holidaze-gray mb-3">
+            <label
+              htmlFor="filter-max-guests"
+              className="block text-sm font-medium text-holidaze-gray mb-3">
               Maximum Guests
             </label>
             <input
               type="number"
+              id="filter-max-guests"
               min="0"
               value={maxGuests || ''}
               onChange={(e) => setMaxGuests(Number(e.target.value) || 0)}
@@ -209,10 +218,13 @@ const VenueFilterModal = ({
             </label>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
-                <label className="block text-xs text-holidaze-light-gray mb-1">
+                <label
+                  htmlFor="filter-city"
+                  className="block text-xs text-holidaze-light-gray mb-1">
                   City
                 </label>
                 <select
+                  id="filter-city"
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
                   className="w-full py-2.5 px-4 pr-9 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray appearance-none cursor-pointer"
@@ -231,10 +243,13 @@ const VenueFilterModal = ({
                 </select>
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-holidaze-light-gray mb-1">
+                <label
+                  htmlFor="filter-country"
+                  className="block text-xs text-holidaze-light-gray mb-1">
                   Country
                 </label>
                 <select
+                  id="filter-country"
                   value={selectedCountry}
                   onChange={(e) => setSelectedCountry(e.target.value)}
                   className="w-full py-2.5 px-4 pr-9 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray appearance-none cursor-pointer"

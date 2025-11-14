@@ -160,10 +160,13 @@ const BookingFormModal = ({
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-holidaze-gray mb-2">
+              <label
+                htmlFor="booking-venue"
+                className="block text-sm font-medium text-holidaze-gray mb-2">
                 Select Venue *
               </label>
               <select
+                id="booking-venue"
                 value={formData.venueId}
                 onChange={(e) =>
                   setFormData({ ...formData, venueId: e.target.value })
@@ -189,8 +192,9 @@ const BookingFormModal = ({
                 <div className="flex gap-4">
                   <img
                     src={selectedVenueData.images[0]}
-                    alt={selectedVenueData.name}
+                    alt=""
                     className="w-24 h-24 object-cover rounded"
+                    aria-hidden="true"
                   />
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-holidaze-gray m-0 mb-1">
@@ -217,10 +221,13 @@ const BookingFormModal = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-holidaze-gray mb-2">
+                <label
+                  htmlFor="booking-checkin"
+                  className="block text-sm font-medium text-holidaze-gray mb-2">
                   Check-in Date *
                 </label>
                 <DatePicker
+                  id="booking-checkin"
                   selected={formData.checkIn}
                   onChange={(date: Date | null) =>
                     setFormData({ ...formData, checkIn: date })
@@ -231,6 +238,7 @@ const BookingFormModal = ({
                   className={`w-full py-3 px-4 border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
                     errors.checkIn ? 'border-red-300' : 'border-holidaze-border'
                   }`}
+                  aria-label="Check-in date"
                 />
                 {errors.checkIn && (
                   <p className="text-sm text-red-600 mt-1">{errors.checkIn}</p>
@@ -238,10 +246,13 @@ const BookingFormModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-holidaze-gray mb-2">
+                <label
+                  htmlFor="booking-checkout"
+                  className="block text-sm font-medium text-holidaze-gray mb-2">
                   Check-out Date *
                 </label>
                 <DatePicker
+                  id="booking-checkout"
                   selected={formData.checkOut}
                   onChange={(date: Date | null) =>
                     setFormData({ ...formData, checkOut: date })
@@ -258,6 +269,7 @@ const BookingFormModal = ({
                       ? 'border-red-300'
                       : 'border-holidaze-border'
                   }`}
+                  aria-label="Check-out date"
                 />
                 {errors.checkOut && (
                   <p className="text-sm text-red-600 mt-1">{errors.checkOut}</p>
@@ -266,11 +278,14 @@ const BookingFormModal = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-holidaze-gray mb-2">
+              <label
+                htmlFor="booking-guests"
+                className="block text-sm font-medium text-holidaze-gray mb-2">
                 Number of Guests *
               </label>
               <input
                 type="number"
+                id="booking-guests"
                 min="1"
                 max={selectedVenueData?.maxGuests || 20}
                 value={formData.guests}

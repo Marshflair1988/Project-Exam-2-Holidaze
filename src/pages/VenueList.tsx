@@ -336,7 +336,11 @@ const VenueList = () => {
                   )}
                 </button>
                 <div className="relative w-full sm:w-auto">
+                  <label htmlFor="venue-sort" className="sr-only">
+                    Sort venues
+                  </label>
                   <select
+                    id="venue-sort"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="py-2.5 px-4 pr-9 border border-holidaze-border rounded text-sm sm:text-[15px] bg-white text-holidaze-gray appearance-none cursor-pointer w-full"
@@ -357,8 +361,12 @@ const VenueList = () => {
 
             {/* Search Input */}
             <div className="mb-6">
+              <label htmlFor="venue-search" className="sr-only">
+                Search venues
+              </label>
               <input
                 type="text"
+                id="venue-search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search venues by name, location, or description..."
@@ -423,9 +431,10 @@ const VenueList = () => {
                             venue.images[0] ||
                             'https://via.placeholder.com/600x400?text=No+Image'
                           }
-                          alt={venue.name}
+                          alt=""
                           className="w-full h-full object-cover"
                           loading="lazy"
+                          aria-hidden="true"
                         />
                       </div>
                       <div className="p-5">
@@ -481,7 +490,7 @@ const VenueList = () => {
                             )}
                           </div>
                         )}
-                        <button className="w-full py-3 px-6 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                        <button className="w-full py-3 px-6 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
                           View Details
                         </button>
                       </div>

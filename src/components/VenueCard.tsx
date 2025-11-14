@@ -31,9 +31,10 @@ const VenueCard = ({ venue }: VenueCardProps) => {
       <div className="w-full aspect-[16/10] relative overflow-hidden">
         <img
           src={getImageUrl(venue.image)}
-          alt={venue.title}
+          alt=""
           className="w-full h-full object-cover"
           loading="lazy"
+          aria-hidden="true"
         />
       </div>
       <div className="p-5 flex flex-col gap-3">
@@ -66,7 +67,7 @@ const VenueCard = ({ venue }: VenueCardProps) => {
         </div>
         <Link
           to={`/venue/${venue.id}`}
-          className="py-3 px-6 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-colors mt-2 hover:bg-holidaze-gray no-underline text-center block">
+          className="py-3 px-6 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all mt-2 hover:opacity-90 no-underline text-center block">
           View Details
         </Link>
       </div>

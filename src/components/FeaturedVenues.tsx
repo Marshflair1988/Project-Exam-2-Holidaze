@@ -138,9 +138,10 @@ const FeaturedVenues = () => {
                       venue.images[0] ||
                       'https://via.placeholder.com/600x400?text=No+Image'
                     }
-                    alt={venue.name}
+                    alt=""
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    aria-hidden="true"
                   />
                 </div>
                 <div className="p-5 flex flex-col gap-3">
@@ -176,9 +177,9 @@ const FeaturedVenues = () => {
                       </span>
                     </div>
                   )}
-                  <button className="py-3 px-6 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-colors mt-2 hover:bg-holidaze-gray">
+                  <span className="py-3 px-6 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium text-center block mt-2">
                     View Details
-                  </button>
+                  </span>
                 </div>
               </div>
             ))}

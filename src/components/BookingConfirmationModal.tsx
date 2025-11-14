@@ -75,8 +75,9 @@ const BookingConfirmationModal = ({
             <div className="flex gap-4 mb-4">
               <img
                 src={bookingData.venueImage}
-                alt={bookingData.venueName}
+                alt=""
                 className="w-24 h-24 object-cover rounded"
+                aria-hidden="true"
               />
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-holidaze-gray m-0 mb-1">

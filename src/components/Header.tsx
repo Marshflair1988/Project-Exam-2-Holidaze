@@ -95,9 +95,7 @@ const Header = () => {
   };
 
   return (
-    <header
-      className="w-full border-b border-white/20 shadow-sm sticky top-0 z-[1000]"
-      style={{ backgroundColor: '#87CEEB' }}>
+    <header className="w-full border-b border-white/20 shadow-sm sticky top-0 z-[1000] bg-[#0369a1]">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 sm:py-5">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -179,12 +177,12 @@ const Header = () => {
               <>
                 <button
                   onClick={() => setIsUserLoginOpen(true)}
-                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-[#87CEEB] border-none hover:bg-gray-100">
+                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-[#0369a1] border-none hover:bg-gray-100">
                   Sign In
                 </button>
                 <button
                   onClick={() => setIsUserRegisterOpen(true)}
-                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-[#87CEEB] border border-white hover:bg-gray-100">
+                  className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-[#0369a1] border border-white hover:bg-gray-100">
                   Register
                 </button>
               </>
@@ -236,12 +234,12 @@ const Header = () => {
               <>
                 <button
                   onClick={() => setIsUserLoginOpen(true)}
-                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-[#87CEEB] border-none hover:bg-gray-100 whitespace-nowrap">
+                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-[#0369a1] border-none hover:bg-gray-100 whitespace-nowrap">
                   Sign In
                 </button>
                 <button
                   onClick={() => setIsUserRegisterOpen(true)}
-                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-[#87CEEB] border border-white hover:bg-gray-100 whitespace-nowrap">
+                  className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-[#0369a1] border border-white hover:bg-gray-100 whitespace-nowrap">
                   Register
                 </button>
               </>

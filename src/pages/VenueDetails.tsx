@@ -247,8 +247,9 @@ const VenueDetails = () => {
                   src={
                     venueData.images[selectedImage] || venueData.images[0] || ''
                   }
-                  alt={venueData.name}
+                  alt=""
                   className="w-full h-full object-cover"
+                  aria-hidden="true"
                 />
               </div>
             </div>
@@ -267,8 +268,9 @@ const VenueDetails = () => {
                     }`}>
                     <img
                       src={image}
-                      alt={`${venueData.name} - Image ${index + 1}`}
+                      alt=""
                       className="w-full h-full object-cover"
+                      aria-hidden="true"
                     />
                   </button>
                 ))}

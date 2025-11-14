@@ -376,12 +376,6 @@ export const venuesApi = {
       method: 'DELETE',
     });
   },
-
-  search: async (query: string): Promise<ApiResponse<unknown[]>> => {
-    return apiCall<unknown[]>(
-      `/holidaze/venues/search?q=${encodeURIComponent(query)}`
-    );
-  },
 };
 
 // Profiles API calls
@@ -390,49 +384,8 @@ export const profilesApi = {
     return apiCall<unknown>(`/holidaze/profiles/${name}`);
   },
 
-  updateProfile: async (
-    name: string,
-    data: unknown
-  ): Promise<ApiResponse<unknown>> => {
-    return apiCall<unknown>(`/holidaze/profiles/${name}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
   deleteProfile: async (): Promise<void> => {
     await apiCall('/auth/profile', {
-      method: 'DELETE',
-    });
-  },
-};
-
-// Bookings API calls
-export const bookingsApi = {
-  getAll: async (): Promise<ApiResponse<unknown[]>> => {
-    return apiCall<unknown[]>('/holidaze/bookings');
-  },
-
-  getById: async (id: string): Promise<ApiResponse<unknown>> => {
-    return apiCall<unknown>(`/holidaze/bookings/${id}`);
-  },
-
-  create: async (data: unknown): Promise<ApiResponse<unknown>> => {
-    return apiCall<unknown>('/holidaze/bookings', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: string, data: unknown): Promise<ApiResponse<unknown>> => {
-    return apiCall<unknown>(`/holidaze/bookings/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: string): Promise<void> => {
-    await apiCall(`/holidaze/bookings/${id}`, {
       method: 'DELETE',
     });
   },
