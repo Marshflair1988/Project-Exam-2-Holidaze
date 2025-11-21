@@ -5,13 +5,17 @@ import Footer from '../components/Footer';
 import BookingFormModal from '../components/BookingFormModal';
 import {
   profilesApi,
+  bookingsApi,
+  venuesApi,
   removeAccessToken,
   removeUserData,
   getUserData,
+  setUserData,
 } from '../services/api';
 
 interface Booking {
   id: string;
+  venueId: string;
   venueName: string;
   venueImage: string;
   checkIn: string;
@@ -36,7 +40,9 @@ const UserProfile = () => {
     'bookings'
   );
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
+  const [isEditBookingOpen, setIsEditBookingOpen] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [username, setUsername] = useState<string>('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -99,42 +105,163 @@ const UserProfile = () => {
     fetchProfileData();
   }, []);
 
-  // Sample data - replace with actual API data
-  const [bookings, setBookings] = useState<Booking[]>([
-    {
-      id: '1',
-      venueName: 'Luxury Beach Villa',
-      venueImage:
-        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop',
-      checkIn: '2024-02-15',
-      checkOut: '2024-02-20',
-      guests: 4,
-      totalPrice: 2250,
-      status: 'confirmed',
-    },
-    {
-      id: '2',
-      venueName: 'Modern City Apartment',
-      venueImage:
-        'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop',
-      checkIn: '2024-02-22',
-      checkOut: '2024-02-25',
-      guests: 2,
-      totalPrice: 540,
-      status: 'confirmed',
-    },
-    {
-      id: '3',
-      venueName: 'Cozy Mountain Cabin',
-      venueImage:
-        'https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=600&h=400&fit=crop',
-      checkIn: '2024-03-10',
-      checkOut: '2024-03-15',
-      guests: 2,
-      totalPrice: 1600,
-      status: 'pending',
-    },
-  ]);
+  // Fetch user bookings from API
+  useEffect(() => {
+    const fetchBookings = async () => {
+      setIsLoadingBookings(true);
+      try {
+        // Get current user's name
+        const userData = getUserData();
+        if (!userData?.name) {
+          console.warn('⚠️ No user data found, cannot fetch bookings');
+          setBookings([]);
+          setIsLoadingBookings(false);
+          return;
+        }
+
+        // Try profile-specific endpoint first, fallback to getAll if it doesn't exist
+        let response;
+        try {
+          response = await bookingsApi.getByProfile(userData.name);
+          console.log('✅ Fetched bookings via profile endpoint:', userData.name, response);
+        } catch (err) {
+          // If profile endpoint doesn't exist, use getAll and filter client-side
+          console.log('⚠️ Profile endpoint not available, using getAll and filtering:', err);
+          const allBookingsResponse = await bookingsApi.getAll();
+          
+          // Filter bookings by customer name if available
+          if (allBookingsResponse.data && Array.isArray(allBookingsResponse.data)) {
+            const filteredBookings = allBookingsResponse.data.filter((booking: unknown) => {
+              const b = booking as { customer?: { name?: string }; customerName?: string };
+              const customerName = b.customer?.name || b.customerName;
+              return customerName === userData.name;
+            });
+            response = { ...allBookingsResponse, data: filteredBookings };
+            console.log(`✅ Filtered ${filteredBookings.length} bookings for user ${userData.name} from ${allBookingsResponse.data.length} total`);
+          } else {
+            response = allBookingsResponse;
+          }
+        }
+        
+        console.log('✅ Using bookings response:', response);
+
+        if (response.data && Array.isArray(response.data)) {
+          // Log first booking to see structure
+          if (response.data.length > 0) {
+            console.log('📋 Sample booking structure:', response.data[0]);
+            console.log('📋 Full booking keys:', Object.keys(response.data[0]));
+          }
+
+          // Transform API bookings to local Booking format
+          const transformedBookings = await Promise.all(
+            response.data.map(async (booking: unknown) => {
+              const apiBooking = booking as {
+                id?: string;
+                dateFrom?: string;
+                dateTo?: string;
+                guests?: number;
+                venue?: { id?: string; name?: string; media?: Array<{ url?: string }>; price?: number };
+                venueId?: string;
+                created?: string;
+                updated?: string;
+              };
+
+              // Check for id and venueId (venueId might be nested in venue object)
+              const bookingId = apiBooking.id;
+              const venueId = apiBooking.venueId || apiBooking.venue?.id;
+
+              if (!bookingId) {
+                console.warn('⚠️ Booking missing id:', apiBooking);
+                return null;
+              }
+
+              // If venueId is missing, skip this booking
+              if (!venueId) {
+                console.warn('⚠️ Booking missing venueId:', apiBooking);
+                return null;
+              }
+
+              // Get venue details - check if venue is already included in booking response
+              let venueName = 'Unknown Venue';
+              let venueImage =
+                'https://via.placeholder.com/600x400?text=No+Image';
+              let venuePrice = 0;
+
+              // If venue data is already included in the booking response, use it
+              if (apiBooking.venue) {
+                venueName = apiBooking.venue.name || 'Unknown Venue';
+                venueImage =
+                  apiBooking.venue.media?.[0]?.url ||
+                  'https://via.placeholder.com/600x400?text=No+Image';
+                venuePrice = apiBooking.venue.price || 0;
+              } else {
+                // Otherwise, fetch venue details separately
+                try {
+                  const venueResponse = await venuesApi.getById(venueId);
+                  if (venueResponse.data) {
+                    const venue = venueResponse.data as {
+                      name?: string;
+                      media?: Array<{ url?: string }>;
+                      price?: number;
+                    };
+                    venueName = venue.name || 'Unknown Venue';
+                    venueImage =
+                      venue.media?.[0]?.url ||
+                      'https://via.placeholder.com/600x400?text=No+Image';
+                    venuePrice = venue.price || 0;
+                  }
+                } catch (err) {
+                  console.warn(
+                    `⚠️ Could not fetch venue ${venueId}:`,
+                    err
+                  );
+                }
+              }
+
+              // Calculate total price
+              const checkInDate = new Date(apiBooking.dateFrom || '');
+              const checkOutDate = new Date(apiBooking.dateTo || '');
+              const nights = Math.ceil(
+                (checkOutDate.getTime() - checkInDate.getTime()) /
+                  (1000 * 60 * 60 * 24)
+              );
+              const totalPrice = venuePrice * nights;
+
+              return {
+                id: bookingId,
+                venueId,
+                venueName,
+                venueImage,
+                checkIn: apiBooking.dateFrom || '',
+                checkOut: apiBooking.dateTo || '',
+                guests: apiBooking.guests || 1,
+                totalPrice,
+                status: 'confirmed' as const, // API bookings are confirmed when created
+              };
+            })
+          );
+
+          // Filter out null values
+          const validBookings = transformedBookings.filter(
+            (b): b is Booking => b !== null
+          );
+          setBookings(validBookings);
+          console.log(`✅ Transformed ${validBookings.length} bookings`);
+        }
+      } catch (err: unknown) {
+        console.error('❌ Error fetching bookings:', err);
+        // If user is not authenticated, bookings will be empty
+        setBookings([]);
+      } finally {
+        setIsLoadingBookings(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
   // Available venues for booking
   const availableVenues: Venue[] = [
@@ -189,59 +316,276 @@ const UserProfile = () => {
     setIsBookingFormOpen(true);
   };
 
-  const handleSaveBooking = (bookingData: {
+  const handleSaveBooking = async (bookingData: {
     venueId: string;
     checkIn: string;
     checkOut: string;
     guests: number;
   }) => {
-    const venue = availableVenues.find((v) => v.id === bookingData.venueId);
-    if (!venue) return;
+    try {
+      // Create booking via API
+      const response = await bookingsApi.create({
+        dateFrom: bookingData.checkIn,
+        dateTo: bookingData.checkOut,
+        guests: bookingData.guests,
+        venueId: bookingData.venueId,
+      });
 
-    const checkInDate = new Date(bookingData.checkIn);
-    const checkOutDate = new Date(bookingData.checkOut);
-    const nights = Math.ceil(
-      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const totalPrice = venue.price * nights;
+      console.log('✅ Booking created:', response);
 
-    const newBooking: Booking = {
-      id: Date.now().toString(),
-      venueName: venue.name,
-      venueImage: venue.images[0],
-      checkIn: bookingData.checkIn,
-      checkOut: bookingData.checkOut,
-      guests: bookingData.guests,
-      totalPrice,
-      status: 'pending',
-    };
+      // Fetch venue details to get name, image, and price
+      let venueName = 'Unknown Venue';
+      let venueImage = 'https://via.placeholder.com/600x400?text=No+Image';
+      let venuePrice = 0;
 
-    setBookings([...bookings, newBooking]);
-    setIsBookingFormOpen(false);
-    setSelectedVenue(null);
-  };
+      try {
+        const venueResponse = await venuesApi.getById(bookingData.venueId);
+        if (venueResponse.data) {
+          const venue = venueResponse.data as {
+            name?: string;
+            media?: Array<{ url?: string }>;
+            price?: number;
+          };
+          venueName = venue.name || 'Unknown Venue';
+          venueImage =
+            venue.media?.[0]?.url ||
+            'https://via.placeholder.com/600x400?text=No+Image';
+          venuePrice = venue.price || 0;
+        }
+      } catch (err) {
+        console.warn(`⚠️ Could not fetch venue ${bookingData.venueId}:`, err);
+      }
 
-  const handleCancelBooking = (bookingId: string) => {
-    if (window.confirm('Are you sure you want to cancel this booking?')) {
-      setBookings(
-        bookings.map((b) =>
-          b.id === bookingId ? { ...b, status: 'cancelled' as const } : b
-        )
+      // Calculate total price
+      const checkInDate = new Date(bookingData.checkIn);
+      const checkOutDate = new Date(bookingData.checkOut);
+      const nights = Math.ceil(
+        (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
       );
+      const totalPrice = venuePrice * nights;
+
+      // Extract booking ID from response
+      const bookingId = (response.data as { id?: string })?.id || Date.now().toString();
+
+      const newBooking: Booking = {
+        id: bookingId,
+        venueName,
+        venueImage,
+        checkIn: bookingData.checkIn,
+        checkOut: bookingData.checkOut,
+        guests: bookingData.guests,
+        totalPrice,
+        status: 'confirmed', // API bookings are confirmed when created
+      };
+
+      setBookings([...bookings, newBooking]);
+      setIsBookingFormOpen(false);
+      setSelectedVenue(null);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Failed to create booking. Please try again.';
+      console.error('❌ Error creating booking:', err);
+      alert(errorMessage);
     }
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditBooking = async (booking: Booking) => {
+    setSelectedBooking(booking);
+    
+    // Fetch venue details for the booking
+    try {
+      const venueResponse = await venuesApi.getById(booking.venueId);
+      if (venueResponse.data) {
+        const venue = venueResponse.data as {
+          id?: string;
+          name?: string;
+          location?: {
+            address?: string;
+            city?: string;
+            country?: string;
+          };
+          price?: number;
+          maxGuests?: number;
+          rating?: number;
+          media?: Array<{ url?: string }>;
+        };
+        
+        const locationParts: string[] = [];
+        if (venue.location?.city) locationParts.push(venue.location.city);
+        if (venue.location?.country) locationParts.push(venue.location.country);
+        const locationString =
+          locationParts.length > 0
+            ? locationParts.join(', ')
+            : venue.location?.address || 'Unknown Location';
+
+        const venueData: Venue = {
+          id: venue.id || booking.venueId,
+          name: venue.name || booking.venueName,
+          location: locationString,
+          price: venue.price || 0,
+          maxGuests: venue.maxGuests || booking.guests,
+          rating: venue.rating || 0,
+          images: venue.media?.map((m) => m.url || '').filter((url) => url !== '') || [booking.venueImage],
+        };
+        
+        setSelectedVenue(venueData);
+      }
+    } catch (err) {
+      console.warn('⚠️ Could not fetch venue for editing:', err);
+      // Use a minimal venue object if fetch fails
+      setSelectedVenue({
+        id: booking.venueId,
+        name: booking.venueName,
+        location: '',
+        price: 0,
+        maxGuests: booking.guests,
+        rating: 0,
+        images: [booking.venueImage],
+      });
+    }
+    
+    setIsEditBookingOpen(true);
+  };
+
+  const handleUpdateBooking = async (bookingData: {
+    venueId: string;
+    checkIn: string;
+    checkOut: string;
+    guests: number;
+  }) => {
+    if (!selectedBooking) return;
+
+    try {
+      // Update booking via API
+      const response = await bookingsApi.update(selectedBooking.id, {
+        dateFrom: bookingData.checkIn,
+        dateTo: bookingData.checkOut,
+        guests: bookingData.guests,
+      });
+
+      console.log('✅ Booking updated:', response);
+
+      // Fetch venue details to recalculate price
+      let venuePrice = 0;
+      try {
+        const venueResponse = await venuesApi.getById(bookingData.venueId);
+        if (venueResponse.data) {
+          const venue = venueResponse.data as { price?: number };
+          venuePrice = venue.price || 0;
+        }
+      } catch (err) {
+        console.warn(`⚠️ Could not fetch venue ${bookingData.venueId}:`, err);
+      }
+
+      // Calculate new total price
+      const checkInDate = new Date(bookingData.checkIn);
+      const checkOutDate = new Date(bookingData.checkOut);
+      const nights = Math.ceil(
+        (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const totalPrice = venuePrice * nights;
+
+      // Update booking in the list
+      setBookings(
+        bookings.map((b) =>
+          b.id === selectedBooking.id
+            ? {
+                ...b,
+                checkIn: bookingData.checkIn,
+                checkOut: bookingData.checkOut,
+                guests: bookingData.guests,
+                totalPrice,
+              }
+            : b
+        )
+      );
+
+      setIsEditBookingOpen(false);
+      setSelectedBooking(null);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Failed to update booking. Please try again.';
+      console.error('❌ Error updating booking:', err);
+      alert(errorMessage);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    if (window.confirm('Are you sure you want to cancel this booking?')) {
+      try {
+        await bookingsApi.delete(bookingId);
+        console.log('✅ Booking cancelled:', bookingId);
+        // Remove booking from list
+        setBookings(bookings.filter((b) => b.id !== bookingId));
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to cancel booking. Please try again.';
+        console.error('❌ Error cancelling booking:', err);
+        alert(errorMessage);
+      }
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    try {
+      // Read file as data URL for immediate preview
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
+        const dataUrl = reader.result as string;
+        
+        // Update local state for immediate UI feedback
         setProfileData({
           ...profileData,
-          avatar: reader.result as string,
+          avatar: dataUrl,
         });
+
+        // Save to API
+        // Note: The API expects avatar as { url: string, alt?: string }
+        // If dataUrl is a base64 string, we'll use it as the URL
+        // In production, you'd typically upload to a service first
+        try {
+          await profilesApi.updateProfile({
+            avatar: {
+              url: dataUrl,
+              alt: profileData.name || 'Profile avatar',
+            },
+          });
+          console.log('✅ Avatar updated successfully');
+          
+          // Update user data in localStorage
+          const userData = getUserData();
+          if (userData) {
+            setUserData({
+              ...userData,
+              avatar: { url: dataUrl, alt: profileData.name || 'Profile avatar' },
+            });
+          }
+        } catch (err) {
+          console.error('❌ Error updating avatar:', err);
+          alert('Failed to save avatar. Please try again.');
+          // Revert to previous avatar on error
+          const userData = getUserData();
+          if (userData?.avatar?.url) {
+            setProfileData({
+              ...profileData,
+              avatar: userData.avatar.url,
+            });
+          }
+        }
       };
       reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('❌ Error reading file:', err);
+      alert('Failed to read image file. Please try again.');
     }
   };
 
@@ -337,7 +681,13 @@ const UserProfile = () => {
                 </h2>
               </div>
 
-              {bookings.length === 0 ? (
+              {isLoadingBookings ? (
+                <div className="bg-white border border-holidaze-border rounded-lg p-12 text-center">
+                  <p className="text-base text-holidaze-light-gray">
+                    Loading bookings...
+                  </p>
+                </div>
+              ) : bookings.length === 0 ? (
                 <div className="bg-white border border-holidaze-border rounded-lg p-12 text-center">
                   <p className="text-base text-holidaze-light-gray">
                     You don't have any bookings yet.
@@ -411,13 +761,20 @@ const UserProfile = () => {
                                 </p>
                               </div>
                               {booking.status !== 'cancelled' && (
-                                <button
-                                  onClick={() =>
-                                    handleCancelBooking(booking.id)
-                                  }
-                                  className="py-2 px-4 bg-white text-red-600 border border-red-200 rounded text-sm font-medium cursor-pointer transition-all hover:bg-red-50">
-                                  Cancel Booking
-                                </button>
+                                <div className="flex flex-col gap-2 w-full sm:w-auto">
+                                  <button
+                                    onClick={() => handleEditBooking(booking)}
+                                    className="py-2 px-4 bg-black text-white border-none rounded text-sm font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                                    Edit Booking
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleCancelBooking(booking.id)
+                                    }
+                                    className="py-2 px-4 bg-white text-red-600 border border-red-200 rounded text-sm font-medium cursor-pointer transition-all hover:bg-red-50">
+                                    Cancel Booking
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </div>
@@ -601,6 +958,27 @@ const UserProfile = () => {
         availableVenues={availableVenues}
         selectedVenue={selectedVenue}
       />
+
+      {/* Edit Booking Modal */}
+      {selectedBooking && selectedVenue && (
+        <BookingFormModal
+          isOpen={isEditBookingOpen}
+          onClose={() => {
+            setIsEditBookingOpen(false);
+            setSelectedBooking(null);
+            setSelectedVenue(null);
+          }}
+          onSave={handleUpdateBooking}
+          availableVenues={[selectedVenue]}
+          selectedVenue={selectedVenue}
+          preSelectedDates={{
+            checkIn: new Date(selectedBooking.checkIn),
+            checkOut: new Date(selectedBooking.checkOut),
+            guests: selectedBooking.guests,
+          }}
+          isEditMode={true}
+        />
+      )}
     </div>
   );
 };

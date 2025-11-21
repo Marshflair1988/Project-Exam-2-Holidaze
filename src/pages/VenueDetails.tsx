@@ -62,7 +62,9 @@ const VenueDetails = () => {
 
   // Fetch venue data from API
   const [venueData, setVenueData] = useState<VenueData | null>(null);
-  const [bookings, setBookings] = useState<Array<{ dateFrom: string; dateTo: string }>>([]);
+  const [bookings, setBookings] = useState<
+    Array<{ dateFrom: string; dateTo: string }>
+  >([]);
 
   // Fetch bookings separately if not included in venue response
   useEffect(() => {
@@ -79,11 +81,11 @@ const VenueDetails = () => {
         // or we might need to fetch from a different endpoint
         const bookingsResponse = await bookingsApi.getByVenue(id);
         console.log('📅 Bookings API response:', bookingsResponse);
-        
+
         if (bookingsResponse.data) {
           // Check if response.data is an array of bookings or a venue object with bookings
           let bookingsArray: unknown[] = [];
-          
+
           if (Array.isArray(bookingsResponse.data)) {
             bookingsArray = bookingsResponse.data;
           } else {
@@ -93,20 +95,18 @@ const VenueDetails = () => {
               bookingsArray = venueData.bookings;
             }
           }
-          
+
           if (bookingsArray.length > 0) {
             const validBookings = bookingsArray
-              .filter(
-                (b: unknown) => {
-                  const booking = b as { dateFrom?: string; dateTo?: string };
-                  return (
-                    booking.dateFrom &&
-                    booking.dateTo &&
-                    typeof booking.dateFrom === 'string' &&
-                    typeof booking.dateTo === 'string'
-                  );
-                }
-              )
+              .filter((b: unknown) => {
+                const booking = b as { dateFrom?: string; dateTo?: string };
+                return (
+                  booking.dateFrom &&
+                  booking.dateTo &&
+                  typeof booking.dateFrom === 'string' &&
+                  typeof booking.dateTo === 'string'
+                );
+              })
               .map((b: unknown) => {
                 const booking = b as { dateFrom: string; dateTo: string };
                 return {
@@ -124,7 +124,10 @@ const VenueDetails = () => {
           console.log('⚠️ No bookings data in API response');
         }
       } catch (err) {
-        console.log('⚠️ Could not fetch bookings (may require authentication):', err);
+        console.log(
+          '⚠️ Could not fetch bookings (may require authentication):',
+          err
+        );
         // If bookings require auth and user is not logged in, that's okay
         // Calendar will just show all dates as available
       }
@@ -190,7 +193,10 @@ const VenueDetails = () => {
                 dateTo: b.dateTo!,
               }));
             setBookings(validBookings);
-            console.log('✅ Fetched bookings from venue response:', validBookings);
+            console.log(
+              '✅ Fetched bookings from venue response:',
+              validBookings
+            );
             console.log('📅 Total bookings found:', validBookings.length);
           }
 
@@ -280,13 +286,16 @@ const VenueDetails = () => {
       // Reset time to midnight for accurate date comparison
       current.setHours(0, 0, 0, 0);
       end.setHours(23, 59, 59, 999);
-      
+
       while (current <= end) {
         booked.push(new Date(current));
         current.setDate(current.getDate() + 1);
       }
     });
-    console.log('📅 Booked dates for exclusion:', booked.map(d => d.toISOString().split('T')[0]));
+    console.log(
+      '📅 Booked dates for exclusion:',
+      booked.map((d) => d.toISOString().split('T')[0])
+    );
     return booked;
   };
 
@@ -294,13 +303,13 @@ const VenueDetails = () => {
     // Normalize date to midnight for comparison
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
-    
+
     return bookings.some((booking) => {
       const start = new Date(booking.dateFrom);
       start.setHours(0, 0, 0, 0);
       const end = new Date(booking.dateTo);
       end.setHours(23, 59, 59, 999);
-      
+
       return checkDate >= start && checkDate <= end;
     });
   };
@@ -316,7 +325,7 @@ const VenueDetails = () => {
     }
   };
 
-  const handleSaveBooking = (bookingData: {
+  const handleSaveBooking = async (bookingData: {
     venueId: string;
     checkIn: string;
     checkOut: string;
@@ -324,29 +333,92 @@ const VenueDetails = () => {
   }) => {
     if (!venueData) return;
 
-    const checkInDate = new Date(bookingData.checkIn);
-    const checkOutDate = new Date(bookingData.checkOut);
-    const nights = Math.ceil(
-      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const totalPrice = venueData.price * nights;
+    try {
+      // Create booking via API
+      console.log('🚀 Creating booking with data:', {
+        dateFrom: bookingData.checkIn,
+        dateTo: bookingData.checkOut,
+        guests: bookingData.guests,
+        venueId: bookingData.venueId,
+      });
 
-    setConfirmedBooking({
-      venueName: venueData.name,
-      venueImage: venueData.images[0] || '',
-      checkIn: bookingData.checkIn,
-      checkOut: bookingData.checkOut,
-      guests: bookingData.guests,
-      totalPrice,
-      bookingId: Date.now().toString(),
-    });
+      const response = await bookingsApi.create({
+        dateFrom: bookingData.checkIn,
+        dateTo: bookingData.checkOut,
+        guests: bookingData.guests,
+        venueId: bookingData.venueId,
+      });
 
-    setIsBookingFormOpen(false);
-    setIsConfirmationOpen(true);
-    // Reset dates after booking
-    setCheckInDate(null);
-    setCheckOutDate(null);
-    setGuests(1);
+      console.log('✅ Booking created:', response);
+      console.log('📋 Booking response data:', response.data);
+
+      const checkInDate = new Date(bookingData.checkIn);
+      const checkOutDate = new Date(bookingData.checkOut);
+      const nights = Math.ceil(
+        (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const totalPrice = venueData.price * nights;
+
+      // Extract booking ID from response
+      const bookingId =
+        (response.data as { id?: string })?.id || Date.now().toString();
+
+      setConfirmedBooking({
+        venueName: venueData.name,
+        venueImage: venueData.images[0] || '',
+        checkIn: bookingData.checkIn,
+        checkOut: bookingData.checkOut,
+        guests: bookingData.guests,
+        totalPrice,
+        bookingId,
+      });
+
+      setIsBookingFormOpen(false);
+      setIsConfirmationOpen(true);
+      // Reset dates after booking
+      setCheckInDate(null);
+      setCheckOutDate(null);
+      setGuests(1);
+
+      // Refresh bookings to show the new booking in the calendar
+      if (id) {
+        try {
+          const bookingsResponse = await bookingsApi.getByVenue(id);
+          if (bookingsResponse.data) {
+            const venueData = bookingsResponse.data as { bookings?: unknown[] };
+            if (venueData.bookings && Array.isArray(venueData.bookings)) {
+              const validBookings = venueData.bookings
+                .filter((b: unknown) => {
+                  const booking = b as { dateFrom?: string; dateTo?: string };
+                  return (
+                    booking.dateFrom &&
+                    booking.dateTo &&
+                    typeof booking.dateFrom === 'string' &&
+                    typeof booking.dateTo === 'string'
+                  );
+                })
+                .map((b: unknown) => {
+                  const booking = b as { dateFrom: string; dateTo: string };
+                  return {
+                    dateFrom: booking.dateFrom,
+                    dateTo: booking.dateTo,
+                  };
+                });
+              setBookings(validBookings);
+            }
+          }
+        } catch (err) {
+          console.warn('⚠️ Could not refresh bookings:', err);
+        }
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Failed to create booking. Please try again.';
+      console.error('❌ Error creating booking:', err);
+      alert(errorMessage);
+    }
   };
 
   // Show loading state
@@ -457,7 +529,6 @@ const VenueDetails = () => {
         {/* Venue Info Section */}
         <section className="w-full py-8 sm:py-12 px-4 sm:px-6 bg-white">
           <div className="max-w-[1200px] mx-auto">
-
             {/* Description */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-holidaze-gray m-0 mb-4">
@@ -487,7 +558,6 @@ const VenueDetails = () => {
               </div>
             </div>
 
-
             {/* Book Now Section */}
             <div className="bg-gray-50 border border-holidaze-border rounded-lg p-6 sm:p-8">
               <div className="mb-6">
@@ -509,7 +579,9 @@ const VenueDetails = () => {
                   <DatePicker
                     id="venue-checkin"
                     selected={checkInDate}
-                    onChange={(date: Date | null) => handleDateSelect(date, true)}
+                    onChange={(date: Date | null) =>
+                      handleDateSelect(date, true)
+                    }
                     selectsStart
                     startDate={checkInDate}
                     endDate={checkOutDate}
@@ -532,7 +604,9 @@ const VenueDetails = () => {
                   <DatePicker
                     id="venue-checkout"
                     selected={checkOutDate}
-                    onChange={(date: Date | null) => handleDateSelect(date, false)}
+                    onChange={(date: Date | null) =>
+                      handleDateSelect(date, false)
+                    }
                     selectsEnd
                     startDate={checkInDate}
                     endDate={checkOutDate}
@@ -557,17 +631,17 @@ const VenueDetails = () => {
                     value={guests}
                     onChange={(e) => setGuests(parseInt(e.target.value))}
                     className="py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray w-full">
-                    {Array.from({ length: venueData.maxGuests }, (_, i) => i + 1).map(
-                      (num) => (
-                        <option key={num} value={num}>
-                          {num} {num === 1 ? 'guest' : 'guests'}
-                        </option>
-                      )
-                    )}
+                    {Array.from(
+                      { length: venueData.maxGuests },
+                      (_, i) => i + 1
+                    ).map((num) => (
+                      <option key={num} value={num}>
+                        {num} {num === 1 ? 'guest' : 'guests'}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
-
 
               <div className="flex justify-end">
                 <button

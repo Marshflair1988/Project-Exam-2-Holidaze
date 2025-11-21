@@ -384,6 +384,20 @@ export const profilesApi = {
     return apiCall<unknown>(`/holidaze/profiles/${name}`);
   },
 
+  updateProfile: async (data: {
+    name?: string;
+    email?: string;
+    bio?: string;
+    avatar?: { url: string; alt?: string };
+    banner?: { url: string; alt?: string };
+    venueManager?: boolean;
+  }): Promise<ApiResponse<unknown>> => {
+    return apiCall<unknown>('/holidaze/profiles', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
   deleteProfile: async (): Promise<void> => {
     await apiCall('/auth/profile', {
       method: 'DELETE',
@@ -393,7 +407,53 @@ export const profilesApi = {
 
 // Bookings API calls
 export const bookingsApi = {
+  // Get bookings for a specific venue
   getByVenue: async (venueId: string): Promise<ApiResponse<unknown[]>> => {
     return apiCall<unknown[]>(`/holidaze/venues/${venueId}?_bookings=true`);
+  },
+
+  // Get all bookings for the authenticated user
+  getAll: async (): Promise<ApiResponse<unknown[]>> => {
+    return apiCall<unknown[]>('/holidaze/bookings?_venue=true');
+  },
+
+  // Get bookings for a specific profile/user
+  getByProfile: async (profileName: string): Promise<ApiResponse<unknown[]>> => {
+    return apiCall<unknown[]>(`/holidaze/profiles/${profileName}/bookings?_venue=true`);
+  },
+
+  // Create a new booking
+  create: async (data: {
+    dateFrom: string;
+    dateTo: string;
+    guests: number;
+    venueId: string;
+  }): Promise<ApiResponse<unknown>> => {
+    return apiCall<unknown>('/holidaze/bookings', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Update a booking
+  update: async (
+    id: string,
+    data: {
+      dateFrom: string;
+      dateTo: string;
+      guests: number;
+    }
+  ): Promise<ApiResponse<unknown>> => {
+    return apiCall<unknown>(`/holidaze/bookings/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Delete a booking
+  delete: async (id: string): Promise<void> => {
+    await apiCall(`/holidaze/bookings/${id}`, {
+      method: 'DELETE',
+    });
   },
 };

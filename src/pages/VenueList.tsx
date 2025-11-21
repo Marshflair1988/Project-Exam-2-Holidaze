@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SearchBar from '../components/SearchBar';
@@ -22,6 +22,7 @@ interface Venue {
 
 const VenueList = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +107,17 @@ const VenueList = () => {
       amenities: amenities.length > 0 ? amenities : undefined,
     };
   };
+
+  // Read city from URL parameters and set filter
+  useEffect(() => {
+    const cityParam = searchParams.get('city');
+    if (cityParam) {
+      setFilters((prev) => ({
+        ...prev,
+        city: cityParam,
+      }));
+    }
+  }, [searchParams]);
 
   // Fetch all venues from API (with pagination)
   useEffect(() => {

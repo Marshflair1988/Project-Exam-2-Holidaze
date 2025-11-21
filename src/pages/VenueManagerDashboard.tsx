@@ -3,7 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import VenueFormModal from '../components/VenueFormModal';
-import { getAccessToken, getUserData, venuesApi } from '../services/api';
+import {
+  getAccessToken,
+  getUserData,
+  setUserData,
+  venuesApi,
+  profilesApi,
+  bookingsApi,
+} from '../services/api';
 
 interface Venue {
   id: string;
@@ -170,45 +177,177 @@ const VenueManagerDashboard = () => {
     fetchVenues();
   }, []);
 
-  const [bookings] = useState<Booking[]>([
-    {
-      id: '1',
-      venueName: 'Luxury Beach Villa',
-      guestName: 'Sarah Johnson',
-      checkIn: '2024-02-15',
-      checkOut: '2024-02-20',
-      guests: 4,
-      totalPrice: 2250,
-      status: 'confirmed',
-    },
-    {
-      id: '2',
-      venueName: 'Modern City Apartment',
-      guestName: 'Michael Chen',
-      checkIn: '2024-02-22',
-      checkOut: '2024-02-25',
-      guests: 2,
-      totalPrice: 540,
-      status: 'confirmed',
-    },
-    {
-      id: '3',
-      venueName: 'Luxury Beach Villa',
-      guestName: 'Emma Williams',
-      checkIn: '2024-03-01',
-      checkOut: '2024-03-05',
-      guests: 6,
-      totalPrice: 1800,
-      status: 'pending',
-    },
-  ]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
   const [profileData, setProfileData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: '',
+    email: '',
     avatar:
       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop',
   });
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  // Fetch profile data from API
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const userData = getUserData();
+      if (!userData?.name) {
+        setIsLoadingProfile(false);
+        return;
+      }
+
+      try {
+        setIsLoadingProfile(true);
+        const response = await profilesApi.getProfile(userData.name);
+        if (response.data) {
+          const profile = response.data as {
+            name?: string;
+            email?: string;
+            avatar?: { url: string; alt?: string };
+            bio?: string;
+          };
+
+          setProfileData({
+            name: profile.name || userData.name || '',
+            email: profile.email || userData.email || '',
+            avatar:
+              profile.avatar?.url ||
+              'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop',
+          });
+        }
+      } catch (err: unknown) {
+        console.error('Error fetching profile:', err);
+        // Fallback to stored user data
+        const userData = getUserData();
+        if (userData) {
+          setProfileData({
+            name: userData.name || '',
+            email: userData.email || '',
+            avatar:
+              userData.avatar?.url ||
+              'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop',
+          });
+        }
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+  // Function to fetch bookings for all venues owned by the venue manager
+  const refreshBookings = async () => {
+    const userData = getUserData();
+    if (!userData?.name || !userData.venueManager) {
+      setIsLoadingBookings(false);
+      return;
+    }
+
+    setIsLoadingBookings(true);
+    try {
+      // Use current venues state if available, otherwise fetch from API
+      let venueIds: string[] = [];
+      
+      if (venues.length > 0) {
+        // Use existing venues
+        venueIds = venues.map((v) => v.id);
+      } else {
+        // Fetch venues if not already loaded
+        const venuesResponse = await venuesApi.getByProfile(userData.name);
+        if (venuesResponse.data && Array.isArray(venuesResponse.data)) {
+          venueIds = venuesResponse.data
+            .map((venue: unknown) => {
+              const v = venue as { id?: string };
+              return v.id;
+            })
+            .filter((id): id is string => !!id);
+        }
+      }
+
+      if (venueIds.length === 0) {
+        setBookings([]);
+        setIsLoadingBookings(false);
+        return;
+      }
+
+      // Fetch bookings for each venue
+      const allBookings: Booking[] = [];
+      for (const venueId of venueIds) {
+        try {
+          const venueResponse = await venuesApi.getById(venueId);
+          const venue = venueResponse.data as {
+            id?: string;
+            name?: string;
+            price?: number;
+            bookings?: Array<{
+              id?: string;
+              dateFrom?: string;
+              dateTo?: string;
+              guests?: number;
+              customer?: { name?: string; email?: string };
+            }>;
+          };
+
+          if (venue.bookings && Array.isArray(venue.bookings)) {
+            const venueBookings = venue.bookings
+              .filter((b) => b.id && b.dateFrom && b.dateTo)
+              .map((b) => {
+                const checkInDate = new Date(b.dateFrom!);
+                const checkOutDate = new Date(b.dateTo!);
+                const nights = Math.ceil(
+                  (checkOutDate.getTime() - checkInDate.getTime()) /
+                    (1000 * 60 * 60 * 24)
+                );
+                
+                const venuePrice = venue.price || 0;
+                const totalPrice = venuePrice * nights;
+
+                return {
+                  id: b.id!,
+                  venueName: venue.name || 'Unknown Venue',
+                  guestName: b.customer?.name || 'Unknown Guest',
+                  checkIn: b.dateFrom!,
+                  checkOut: b.dateTo!,
+                  guests: b.guests || 1,
+                  totalPrice,
+                  status: 'confirmed' as const,
+                };
+              });
+
+            allBookings.push(...venueBookings);
+          }
+        } catch (err) {
+          console.warn(`⚠️ Could not fetch bookings for venue ${venueId}:`, err);
+        }
+      }
+
+      // Sort bookings by check-in date (upcoming first)
+      allBookings.sort((a, b) => {
+        const dateA = new Date(a.checkIn).getTime();
+        const dateB = new Date(b.checkIn).getTime();
+        return dateA - dateB;
+      });
+
+      setBookings(allBookings);
+      console.log(`✅ Fetched ${allBookings.length} bookings for ${venueIds.length} venues`);
+    } catch (err) {
+      console.error('❌ Error fetching bookings:', err);
+      setBookings([]);
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  // Fetch bookings when component mounts or when venues change
+  useEffect(() => {
+    // Only fetch bookings if we have venues or if venues are still loading
+    if (venues.length > 0 || !isFetchingVenues) {
+      refreshBookings();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [venues.length]); // Refresh when number of venues changes
 
   // Refresh venues after creating/updating/deleting
   const refreshVenues = async () => {
@@ -229,6 +368,9 @@ const VenueManagerDashboard = () => {
           .filter((venue): venue is Venue => venue !== null);
         setVenues(transformedVenues);
         console.log('✅ Venues refreshed:', transformedVenues);
+        
+        // Refresh bookings after venues are updated
+        await refreshBookings();
       }
     } catch (err: unknown) {
       console.error('❌ Error refreshing venues:', err);
@@ -404,17 +546,57 @@ const VenueManagerDashboard = () => {
     }
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    try {
+      // Read file as data URL for immediate preview
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
+        const dataUrl = reader.result as string;
+        
+        // Update local state for immediate UI feedback
         setProfileData({
           ...profileData,
-          avatar: reader.result as string,
+          avatar: dataUrl,
         });
+
+        // Save to API
+        try {
+          await profilesApi.updateProfile({
+            avatar: {
+              url: dataUrl,
+              alt: profileData.name || 'Profile avatar',
+            },
+          });
+          console.log('✅ Avatar updated successfully');
+          
+          // Update user data in localStorage
+          const userData = getUserData();
+          if (userData) {
+            setUserData({
+              ...userData,
+              avatar: { url: dataUrl, alt: profileData.name || 'Profile avatar' },
+            });
+          }
+        } catch (err) {
+          console.error('❌ Error updating avatar:', err);
+          alert('Failed to save avatar. Please try again.');
+          // Revert to previous avatar on error
+          const userData = getUserData();
+          if (userData?.avatar?.url) {
+            setProfileData({
+              ...profileData,
+              avatar: userData.avatar.url,
+            });
+          }
+        }
       };
       reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('❌ Error reading file:', err);
+      alert('Failed to read image file. Please try again.');
     }
   };
 
@@ -592,7 +774,13 @@ const VenueManagerDashboard = () => {
                 Upcoming Bookings ({bookings.length})
               </h2>
 
-              {bookings.length === 0 ? (
+              {isLoadingBookings ? (
+                <div className="bg-white border border-holidaze-border rounded-lg p-12 text-center">
+                  <p className="text-base text-holidaze-light-gray">
+                    Loading bookings...
+                  </p>
+                </div>
+              ) : bookings.length === 0 ? (
                 <div className="bg-white border border-holidaze-border rounded-lg p-12 text-center">
                   <p className="text-base text-holidaze-light-gray">
                     You don't have any upcoming bookings yet.
@@ -676,6 +864,11 @@ const VenueManagerDashboard = () => {
               </h2>
 
               <div className="bg-white border border-holidaze-border rounded-lg p-6 sm:p-8 max-w-2xl">
+                {isLoadingProfile ? (
+                  <div className="text-center py-8">
+                    <p className="text-holidaze-light-gray">Loading profile...</p>
+                  </div>
+                ) : (
                 <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 mb-8">
                   <div className="flex flex-col items-center sm:items-start">
                     <div className="relative mb-4">
@@ -741,6 +934,7 @@ const VenueManagerDashboard = () => {
                     </button>
                   </div>
                 </div>
+                )}
               </div>
             </div>
           )}

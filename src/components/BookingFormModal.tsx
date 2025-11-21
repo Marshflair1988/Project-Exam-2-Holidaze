@@ -28,6 +28,7 @@ interface BookingFormModalProps {
     checkOut: Date | null;
     guests?: number;
   };
+  isEditMode?: boolean;
 }
 
 const BookingFormModal = ({
@@ -37,6 +38,7 @@ const BookingFormModal = ({
   availableVenues,
   selectedVenue,
   preSelectedDates,
+  isEditMode = false,
 }: BookingFormModalProps) => {
   const [formData, setFormData] = useState({
     venueId: '',
@@ -355,7 +357,7 @@ const BookingFormModal = ({
             <button
               type="submit"
               className="flex-1 py-2.5 px-5 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
-              Book Now
+              {isEditMode ? 'Save Changes' : 'Book Now'}
             </button>
           </div>
         </form>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -57,6 +58,7 @@ const popularCities = [
 ];
 
 const SearchBar = () => {
+  const navigate = useNavigate();
   const [checkInDate, setCheckInDate] = useState<Date | null>(null);
   const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
   const [location, setLocation] = useState('');
@@ -129,6 +131,41 @@ const SearchBar = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Extract city name from location string (e.g., "Oslo, Norway" -> "Oslo")
+  const extractCity = (locationString: string): string => {
+    if (!locationString.trim()) return '';
+    // Split by comma and take the first part (city name)
+    const parts = locationString.split(',');
+    return parts[0].trim();
+  };
+
+  // Handle search button click
+  const handleSearch = () => {
+    if (!location.trim()) {
+      // If no location, just navigate to venues page
+      navigate('/venues');
+      return;
+    }
+
+    // Extract city from location
+    const city = extractCity(location);
+    
+    // Build URL with search parameters
+    const params = new URLSearchParams();
+    if (city) {
+      params.set('city', city);
+    }
+    if (checkInDate) {
+      params.set('checkIn', checkInDate.toISOString().split('T')[0]);
+    }
+    if (checkOutDate) {
+      params.set('checkOut', checkOutDate.toISOString().split('T')[0]);
+    }
+
+    // Navigate to venues page with search parameters
+    navigate(`/venues?${params.toString()}`);
+  };
 
   return (
     <section className="w-full py-6 sm:py-10 px-4 sm:px-6 bg-white">
@@ -243,7 +280,9 @@ const SearchBar = () => {
             </select>
           </div>
         </div>
-        <button className="py-3 px-6 bg-black text-white border-none rounded text-sm sm:text-base font-medium cursor-pointer flex items-center justify-center gap-2 transition-colors w-full sm:w-auto hover:bg-holidaze-gray">
+        <button 
+          onClick={handleSearch}
+          className="py-3 px-6 bg-black text-white border-none rounded text-sm sm:text-base font-medium cursor-pointer flex items-center justify-center gap-2 transition-colors w-full sm:w-auto hover:bg-holidaze-gray">
           <span className="text-base">🔍</span>
           Search
         </button>
