@@ -302,30 +302,45 @@ const VenueList = () => {
         {/* Venues Section */}
         <section className="w-full py-8 sm:py-12 px-4 sm:px-6">
           <div className="max-w-[1200px] mx-auto">
-            {/* Header with Filters */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-8">
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-holidaze-gray m-0 mb-2 tracking-tight">
-                  All Venues
-                </h1>
-                <p className="text-base text-holidaze-light-gray m-0">
-                  {isLoading
-                    ? 'Loading venues...'
-                    : filteredVenues.length === venues.length
-                    ? `Discover ${venues.length} amazing venues`
-                    : `Found ${filteredVenues.length} of ${venues.length} venues`}
-                  {!isLoading && displayedVenues.length > 0 && (
-                    <span className="ml-2">
-                      (Showing {displayedVenues.length} of{' '}
-                      {filteredVenues.length})
-                    </span>
-                  )}
-                </p>
+            {/* Header */}
+            <div className="mb-6">
+              <h1 className="text-3xl sm:text-4xl font-bold text-holidaze-gray m-0 mb-2 tracking-tight">
+                All Venues
+              </h1>
+              <p className="text-base text-holidaze-light-gray m-0">
+                {isLoading
+                  ? 'Loading venues...'
+                  : filteredVenues.length === venues.length
+                  ? `Discover ${venues.length} amazing venues`
+                  : `Found ${filteredVenues.length} of ${venues.length} venues`}
+                {!isLoading && displayedVenues.length > 0 && (
+                  <span className="ml-2">
+                    (Showing {displayedVenues.length} of{' '}
+                    {filteredVenues.length})
+                  </span>
+                )}
+              </p>
+            </div>
+
+            {/* Search Input with Filters and Sort */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
+              <div className="flex-1 min-w-0">
+                <label htmlFor="venue-search" className="sr-only">
+                  Search venues
+                </label>
+                <input
+                  type="text"
+                  id="venue-search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search venues by name, location, or description..."
+                  className="w-full py-2.5 px-4 border border-holidaze-border rounded text-sm sm:text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                />
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:flex-shrink-0">
                 <button
                   onClick={() => setIsFilterModalOpen(true)}
-                  className={`py-2.5 px-5 bg-white text-holidaze-gray border rounded text-sm sm:text-[15px] font-medium cursor-pointer flex items-center justify-center gap-2 transition-all hover:bg-gray-100 w-full sm:w-auto ${
+                  className={`py-2.5 px-5 bg-white text-holidaze-gray border rounded text-sm sm:text-[15px] font-medium cursor-pointer flex items-center justify-center gap-2 transition-all hover:bg-gray-100 whitespace-nowrap ${
                     hasActiveFilters()
                       ? 'border-black border-2'
                       : 'border-holidaze-border'
@@ -347,7 +362,7 @@ const VenueList = () => {
                     </span>
                   )}
                 </button>
-                <div className="relative w-full sm:w-auto">
+                <div className="relative sm:w-auto min-w-[180px]">
                   <label htmlFor="venue-sort" className="sr-only">
                     Sort venues
                   </label>
@@ -369,21 +384,6 @@ const VenueList = () => {
                   </select>
                 </div>
               </div>
-            </div>
-
-            {/* Search Input */}
-            <div className="mb-6">
-              <label htmlFor="venue-search" className="sr-only">
-                Search venues
-              </label>
-              <input
-                type="text"
-                id="venue-search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search venues by name, location, or description..."
-                className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-              />
             </div>
 
             {/* Loading State */}

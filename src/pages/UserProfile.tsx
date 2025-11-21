@@ -263,43 +263,6 @@ const UserProfile = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
-  // Available venues for booking
-  const availableVenues: Venue[] = [
-    {
-      id: '1',
-      name: 'Luxury Beach Villa',
-      location: 'Malibu, California',
-      price: 450,
-      maxGuests: 8,
-      rating: 4.9,
-      images: [
-        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop',
-      ],
-    },
-    {
-      id: '2',
-      name: 'Modern City Apartment',
-      location: 'New York, NY',
-      price: 180,
-      maxGuests: 4,
-      rating: 4.7,
-      images: [
-        'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop',
-      ],
-    },
-    {
-      id: '3',
-      name: 'Cozy Mountain Cabin',
-      location: 'Aspen, Colorado',
-      price: 320,
-      maxGuests: 6,
-      rating: 4.8,
-      images: [
-        'https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=600&h=400&fit=crop',
-      ],
-    },
-  ];
-
   const [profileData, setProfileData] = useState<{
     name: string;
     email: string;
@@ -310,11 +273,6 @@ const UserProfile = () => {
     avatar:
       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop',
   });
-
-  const handleCreateBooking = (venue?: Venue) => {
-    setSelectedVenue(venue || null);
-    setIsBookingFormOpen(true);
-  };
 
   const handleSaveBooking = async (bookingData: {
     venueId: string;
@@ -764,7 +722,7 @@ const UserProfile = () => {
                                 <div className="flex flex-col gap-2 w-full sm:w-auto">
                                   <button
                                     onClick={() => handleEditBooking(booking)}
-                                    className="py-2 px-4 bg-black text-white border-none rounded text-sm font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                                    className="py-2 px-4 bg-[#0369a1] text-white border-none rounded text-sm font-medium cursor-pointer transition-all hover:opacity-90">
                                     Edit Booking
                                   </button>
                                   <button
@@ -784,57 +742,6 @@ const UserProfile = () => {
                   ))}
                 </div>
               )}
-
-              {/* Available Venues for Quick Booking */}
-              <div className="mt-12">
-                <h2 className="text-2xl font-bold text-holidaze-gray m-0 mb-6">
-                  Available Venues
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {availableVenues.map((venue) => (
-                    <div
-                      key={venue.id}
-                      className="bg-white border border-holidaze-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                      <div className="w-full aspect-[16/10] relative overflow-hidden">
-                        <img
-                          src={venue.images[0]}
-                          alt={venue.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-5">
-                        <h3 className="text-xl font-semibold text-holidaze-gray m-0 mb-1">
-                          {venue.name}
-                        </h3>
-                        <p className="text-[15px] text-holidaze-light-gray m-0 mb-3">
-                          {venue.location}
-                        </p>
-                        <div className="flex justify-between items-center mb-4">
-                          <div className="flex items-center gap-1">
-                            <span className="text-base">⭐</span>
-                            <span className="text-[15px] font-medium text-holidaze-gray">
-                              {venue.rating}
-                            </span>
-                          </div>
-                          <div className="flex items-baseline">
-                            <span className="text-[22px] font-bold text-holidaze-gray">
-                              ${venue.price}
-                            </span>
-                            <span className="text-sm text-holidaze-light-gray ml-1">
-                              / night
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleCreateBooking(venue)}
-                          className="w-full py-3 px-6 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
-                          Book Now
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
 
@@ -955,7 +862,7 @@ const UserProfile = () => {
           setSelectedVenue(null);
         }}
         onSave={handleSaveBooking}
-        availableVenues={availableVenues}
+        availableVenues={selectedVenue ? [selectedVenue] : []}
         selectedVenue={selectedVenue}
       />
 
