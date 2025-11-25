@@ -85,7 +85,6 @@ const UserProfile = () => {
           });
         }
       } catch (err: unknown) {
-        console.error('Error fetching profile:', err);
         // Fallback to stored user data
         const userData = getUserData();
         if (userData) {
@@ -113,7 +112,6 @@ const UserProfile = () => {
         // Get current user's name
         const userData = getUserData();
         if (!userData?.name) {
-          console.warn('⚠️ No user data found, cannot fetch bookings');
           setBookings([]);
           setIsLoadingBookings(false);
           return;
@@ -123,10 +121,8 @@ const UserProfile = () => {
         let response;
         try {
           response = await bookingsApi.getByProfile(userData.name);
-          console.log('✅ Fetched bookings via profile endpoint:', userData.name, response);
         } catch (err) {
           // If profile endpoint doesn't exist, use getAll and filter client-side
-          console.log('⚠️ Profile endpoint not available, using getAll and filtering:', err);
           const allBookingsResponse = await bookingsApi.getAll();
           
           // Filter bookings by customer name if available
@@ -137,19 +133,15 @@ const UserProfile = () => {
               return customerName === userData.name;
             });
             response = { ...allBookingsResponse, data: filteredBookings };
-            console.log(`✅ Filtered ${filteredBookings.length} bookings for user ${userData.name} from ${allBookingsResponse.data.length} total`);
           } else {
             response = allBookingsResponse;
           }
         }
         
-        console.log('✅ Using bookings response:', response);
 
         if (response.data && Array.isArray(response.data)) {
           // Log first booking to see structure
           if (response.data.length > 0) {
-            console.log('📋 Sample booking structure:', response.data[0]);
-            console.log('📋 Full booking keys:', Object.keys(response.data[0]));
           }
 
           // Transform API bookings to local Booking format
@@ -171,13 +163,11 @@ const UserProfile = () => {
               const venueId = apiBooking.venueId || apiBooking.venue?.id;
 
               if (!bookingId) {
-                console.warn('⚠️ Booking missing id:', apiBooking);
                 return null;
               }
 
               // If venueId is missing, skip this booking
               if (!venueId) {
-                console.warn('⚠️ Booking missing venueId:', apiBooking);
                 return null;
               }
 
@@ -211,10 +201,7 @@ const UserProfile = () => {
                     venuePrice = venue.price || 0;
                   }
                 } catch (err) {
-                  console.warn(
-                    `⚠️ Could not fetch venue ${venueId}:`,
-                    err
-                  );
+                  // Could not fetch venue
                 }
               }
 
@@ -246,10 +233,8 @@ const UserProfile = () => {
             (b): b is Booking => b !== null
           );
           setBookings(validBookings);
-          console.log(`✅ Transformed ${validBookings.length} bookings`);
         }
       } catch (err: unknown) {
-        console.error('❌ Error fetching bookings:', err);
         // If user is not authenticated, bookings will be empty
         setBookings([]);
       } finally {
@@ -289,7 +274,6 @@ const UserProfile = () => {
         venueId: bookingData.venueId,
       });
 
-      console.log('✅ Booking created:', response);
 
       // Fetch venue details to get name, image, and price
       let venueName = 'Unknown Venue';
@@ -311,7 +295,7 @@ const UserProfile = () => {
           venuePrice = venue.price || 0;
         }
       } catch (err) {
-        console.warn(`⚠️ Could not fetch venue ${bookingData.venueId}:`, err);
+        // Could not fetch venue
       }
 
       // Calculate total price
@@ -344,7 +328,6 @@ const UserProfile = () => {
         err instanceof Error
           ? err.message
           : 'Failed to create booking. Please try again.';
-      console.error('❌ Error creating booking:', err);
       alert(errorMessage);
     }
   };
@@ -391,7 +374,7 @@ const UserProfile = () => {
         setSelectedVenue(venueData);
       }
     } catch (err) {
-      console.warn('⚠️ Could not fetch venue for editing:', err);
+      // Could not fetch venue for editing
       // Use a minimal venue object if fetch fails
       setSelectedVenue({
         id: booking.venueId,
@@ -423,7 +406,6 @@ const UserProfile = () => {
         guests: bookingData.guests,
       });
 
-      console.log('✅ Booking updated:', response);
 
       // Fetch venue details to recalculate price
       let venuePrice = 0;
@@ -434,7 +416,7 @@ const UserProfile = () => {
           venuePrice = venue.price || 0;
         }
       } catch (err) {
-        console.warn(`⚠️ Could not fetch venue ${bookingData.venueId}:`, err);
+        // Could not fetch venue
       }
 
       // Calculate new total price
@@ -467,7 +449,6 @@ const UserProfile = () => {
         err instanceof Error
           ? err.message
           : 'Failed to update booking. Please try again.';
-      console.error('❌ Error updating booking:', err);
       alert(errorMessage);
     }
   };
@@ -476,7 +457,6 @@ const UserProfile = () => {
     if (window.confirm('Are you sure you want to cancel this booking?')) {
       try {
         await bookingsApi.delete(bookingId);
-        console.log('✅ Booking cancelled:', bookingId);
         // Remove booking from list
         setBookings(bookings.filter((b) => b.id !== bookingId));
       } catch (err: unknown) {
@@ -484,7 +464,6 @@ const UserProfile = () => {
           err instanceof Error
             ? err.message
             : 'Failed to cancel booking. Please try again.';
-        console.error('❌ Error cancelling booking:', err);
         alert(errorMessage);
       }
     }
@@ -517,7 +496,6 @@ const UserProfile = () => {
               alt: profileData.name || 'Profile avatar',
             },
           });
-          console.log('✅ Avatar updated successfully');
           
           // Update user data in localStorage
           const userData = getUserData();
@@ -528,7 +506,6 @@ const UserProfile = () => {
             });
           }
         } catch (err) {
-          console.error('❌ Error updating avatar:', err);
           alert('Failed to save avatar. Please try again.');
           // Revert to previous avatar on error
           const userData = getUserData();
@@ -542,7 +519,6 @@ const UserProfile = () => {
       };
       reader.readAsDataURL(file);
     } catch (err) {
-      console.error('❌ Error reading file:', err);
       alert('Failed to read image file. Please try again.');
     }
   };

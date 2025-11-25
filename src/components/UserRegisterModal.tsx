@@ -100,23 +100,10 @@ const UserRegisterModal = ({
         venueManager: false,
       };
 
-      console.log('📝 Registration attempt:', {
-        originalName: name,
-        apiName: apiName,
-        email: email,
-        venueManager: false,
-      });
-
       const response = await authApi.register(registrationData);
-
-      console.log('✅ Registration response:', response);
 
       // Registration successful - now automatically log in to get access token
       if (response.data && response.data.name) {
-        console.log('✅ Registration successful! Logging in automatically...', {
-          name: response.data.name,
-          email: response.data.email,
-        });
 
         try {
           // Automatically log in with the same credentials to get access token
@@ -126,10 +113,6 @@ const UserRegisterModal = ({
           });
 
           if (loginResponse.data && loginResponse.data.accessToken) {
-            console.log('✅ Auto-login successful!', {
-              name: loginResponse.data.name,
-              email: loginResponse.data.email,
-            });
 
             setAccessToken(loginResponse.data.accessToken);
             setUserData({
@@ -149,26 +132,19 @@ const UserRegisterModal = ({
             // Redirect to user dashboard for regular users
             navigate('/user/profile');
           } else {
-            console.error(
-              '❌ Auto-login failed - no accessToken:',
-              loginResponse
-            );
             setError(
               'Registration successful, but login failed. Please try logging in manually.'
             );
           }
         } catch (loginErr: unknown) {
-          console.error('❌ Auto-login error:', loginErr);
           setError(
             'Registration successful, but automatic login failed. Please try logging in manually.'
           );
         }
       } else {
-        console.error('❌ Registration failed:', response);
         setError('Registration failed. Please try again.');
       }
     } catch (err: unknown) {
-      console.error('Registration error:', err);
       const errorMessage =
         err instanceof Error
           ? err.message

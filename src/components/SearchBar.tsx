@@ -282,7 +282,7 @@ const SearchBar = () => {
         </div>
         <button 
           onClick={handleSearch}
-          className="py-3 px-6 bg-black text-white border-none rounded text-sm sm:text-base font-medium cursor-pointer flex items-center justify-center gap-2 transition-colors w-full sm:w-auto hover:bg-holidaze-gray">
+          className="py-3 px-6 bg-[#0369a1] text-white border-none rounded text-sm sm:text-base font-medium cursor-pointer flex items-center justify-center gap-2 transition-colors w-full sm:w-auto hover:opacity-90">
           <span className="text-base">🔍</span>
           Search
         </button>

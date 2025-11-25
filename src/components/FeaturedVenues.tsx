@@ -88,7 +88,6 @@ const FeaturedVenues = () => {
           setTopRatedVenues(selected);
         }
       } catch (err: unknown) {
-        console.error('Error fetching top rated venues:', err);
       } finally {
         setIsLoading(false);
       }

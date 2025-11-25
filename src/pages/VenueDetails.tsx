@@ -73,14 +73,12 @@ const VenueDetails = () => {
 
       // If we already have bookings from venue response, don't fetch again
       if (bookings.length > 0) {
-        console.log('📅 Using bookings from venue response:', bookings.length);
         return;
       }
       try {
         // Try to fetch bookings separately - the API might return bookings in the venue data
         // or we might need to fetch from a different endpoint
         const bookingsResponse = await bookingsApi.getByVenue(id);
-        console.log('📅 Bookings API response:', bookingsResponse);
 
         if (bookingsResponse.data) {
           // Check if response.data is an array of bookings or a venue object with bookings
@@ -115,19 +113,9 @@ const VenueDetails = () => {
                 };
               });
             setBookings(validBookings);
-            console.log('✅ Fetched bookings separately:', validBookings);
-            console.log('📅 Total bookings found:', validBookings.length);
-          } else {
-            console.log('⚠️ No bookings found in API response');
           }
-        } else {
-          console.log('⚠️ No bookings data in API response');
         }
       } catch (err) {
-        console.log(
-          '⚠️ Could not fetch bookings (may require authentication):',
-          err
-        );
         // If bookings require auth and user is not logged in, that's okay
         // Calendar will just show all dates as available
       }
@@ -152,7 +140,6 @@ const VenueDetails = () => {
 
       try {
         const response = await venuesApi.getById(id);
-        console.log('✅ Fetched venue:', response);
 
         if (response.data) {
           const apiVenue = response.data as {
@@ -193,11 +180,6 @@ const VenueDetails = () => {
                 dateTo: b.dateTo!,
               }));
             setBookings(validBookings);
-            console.log(
-              '✅ Fetched bookings from venue response:',
-              validBookings
-            );
-            console.log('📅 Total bookings found:', validBookings.length);
           }
 
           if (!apiVenue.id || !apiVenue.name) {
@@ -257,7 +239,6 @@ const VenueDetails = () => {
           err instanceof Error
             ? err.message
             : 'Failed to load venue. Please try again.';
-        console.error('❌ Error fetching venue:', err);
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -292,10 +273,6 @@ const VenueDetails = () => {
         current.setDate(current.getDate() + 1);
       }
     });
-    console.log(
-      '📅 Booked dates for exclusion:',
-      booked.map((d) => d.toISOString().split('T')[0])
-    );
     return booked;
   };
 
@@ -335,12 +312,6 @@ const VenueDetails = () => {
 
     try {
       // Create booking via API
-      console.log('🚀 Creating booking with data:', {
-        dateFrom: bookingData.checkIn,
-        dateTo: bookingData.checkOut,
-        guests: bookingData.guests,
-        venueId: bookingData.venueId,
-      });
 
       const response = await bookingsApi.create({
         dateFrom: bookingData.checkIn,
@@ -349,8 +320,6 @@ const VenueDetails = () => {
         venueId: bookingData.venueId,
       });
 
-      console.log('✅ Booking created:', response);
-      console.log('📋 Booking response data:', response.data);
 
       const checkInDate = new Date(bookingData.checkIn);
       const checkOutDate = new Date(bookingData.checkOut);
@@ -408,7 +377,7 @@ const VenueDetails = () => {
             }
           }
         } catch (err) {
-          console.warn('⚠️ Could not refresh bookings:', err);
+          // Could not refresh bookings
         }
       }
     } catch (err: unknown) {
@@ -416,7 +385,6 @@ const VenueDetails = () => {
         err instanceof Error
           ? err.message
           : 'Failed to create booking. Please try again.';
-      console.error('❌ Error creating booking:', err);
       alert(errorMessage);
     }
   };

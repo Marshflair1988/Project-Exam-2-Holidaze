@@ -67,20 +67,10 @@ const UserLoginModal = ({
           if (profileResponse.data) {
             const profile = profileResponse.data as { venueManager?: boolean };
             venueManager = profile.venueManager || false;
-            console.log('✅ Profile fetched:', { venueManager });
           }
         } catch (profileErr) {
-          console.warn(
-            '⚠️ Could not fetch profile, using default venueManager status:',
-            profileErr
-          );
+          // Could not fetch profile
         }
-
-        console.log('✅ Login successful!', {
-          name: response.data.name,
-          email: response.data.email,
-          venueManager: venueManager,
-        });
 
         setUserData({
           name: response.data.name,
