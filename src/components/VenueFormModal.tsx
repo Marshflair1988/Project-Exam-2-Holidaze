@@ -418,7 +418,7 @@ const VenueFormModal = ({
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+              className="flex-1 py-2.5 px-5 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
               {editingVenue ? 'Save Changes' : 'Create Venue'}
             </button>
           </div>

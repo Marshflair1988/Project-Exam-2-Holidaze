@@ -90,18 +90,12 @@ const VenueManagerRegisterModal = ({
         bio: companyName ? `Company: ${companyName}` : undefined,
       });
 
-      console.log('✅ Registration response:', response);
 
       // Registration successful - now automatically log in to get access token
       if (response.data && response.data.name) {
         // Get venueManager status from registration response (we registered with venueManager: true)
         const isVenueManager = response.data.venueManager ?? true; // Default to true since we registered as venue manager
 
-        console.log('✅ Registration successful! Logging in automatically...', {
-          name: response.data.name,
-          email: response.data.email,
-          venueManager: isVenueManager,
-        });
 
         try {
           // Automatically log in with the same credentials to get access token
@@ -111,11 +105,6 @@ const VenueManagerRegisterModal = ({
           });
 
           if (loginResponse.data && loginResponse.data.accessToken) {
-            console.log('✅ Auto-login successful!', {
-              name: loginResponse.data.name,
-              email: loginResponse.data.email,
-              venueManager: isVenueManager,
-            });
 
             // Use venueManager from registration response since login might not include it
             setAccessToken(loginResponse.data.accessToken);
@@ -136,22 +125,16 @@ const VenueManagerRegisterModal = ({
             // Redirect to venue manager dashboard
             navigate('/venue-manager/dashboard');
           } else {
-            console.error(
-              '❌ Auto-login failed - no accessToken:',
-              loginResponse
-            );
             setError(
               'Registration successful, but login failed. Please try logging in manually.'
             );
           }
         } catch (loginErr: unknown) {
-          console.error('❌ Auto-login error:', loginErr);
           setError(
             'Registration successful, but automatic login failed. Please try logging in manually.'
           );
         }
       } else {
-        console.error('❌ Registration failed:', response);
         setError('Registration failed. Please try again.');
       }
     } catch (err: unknown) {

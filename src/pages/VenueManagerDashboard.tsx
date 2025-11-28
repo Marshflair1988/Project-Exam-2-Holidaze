@@ -144,7 +144,6 @@ const VenueManagerDashboard = () => {
       try {
         // Use the profile-specific endpoint to get only venues owned by the current user
         const response = await venuesApi.getByProfile(userData.name);
-        console.log('✅ Fetched venues for profile:', userData.name, response);
 
         if (response.data && Array.isArray(response.data)) {
           // The profile-specific endpoint already filters by owner, so we just need to transform
@@ -153,10 +152,6 @@ const VenueManagerDashboard = () => {
             .filter((venue): venue is Venue => venue !== null);
 
           setVenues(transformedVenues);
-          console.log(
-            `✅ Loaded ${transformedVenues.length} venue(s) for ${userData.name}:`,
-            transformedVenues
-          );
         } else {
           setVenues([]);
         }
@@ -165,7 +160,6 @@ const VenueManagerDashboard = () => {
           err instanceof Error
             ? err.message
             : 'Failed to load venues. Please try again.';
-        console.error('❌ Error fetching venues:', err);
         setError(errorMessage);
         setVenues([]);
       } finally {
@@ -216,7 +210,6 @@ const VenueManagerDashboard = () => {
           });
         }
       } catch (err: unknown) {
-        console.error('Error fetching profile:', err);
         // Fallback to stored user data
         const userData = getUserData();
         if (userData) {
@@ -271,11 +264,12 @@ const VenueManagerDashboard = () => {
         return;
       }
 
-      // Fetch bookings for each venue
+      // Fetch bookings for each venue using the bookings API endpoint
       const allBookings: Booking[] = [];
       for (const venueId of venueIds) {
         try {
-          const venueResponse = await venuesApi.getById(venueId);
+          // Use bookingsApi.getByVenue which includes customer information
+          const venueResponse = await bookingsApi.getByVenue(venueId);
           const venue = venueResponse.data as {
             id?: string;
             name?: string;
@@ -318,7 +312,7 @@ const VenueManagerDashboard = () => {
             allBookings.push(...venueBookings);
           }
         } catch (err) {
-          console.warn(`⚠️ Could not fetch bookings for venue ${venueId}:`, err);
+          // Could not fetch bookings for venue
         }
       }
 
@@ -330,9 +324,7 @@ const VenueManagerDashboard = () => {
       });
 
       setBookings(allBookings);
-      console.log(`✅ Fetched ${allBookings.length} bookings for ${venueIds.length} venues`);
     } catch (err) {
-      console.error('❌ Error fetching bookings:', err);
       setBookings([]);
     } finally {
       setIsLoadingBookings(false);
@@ -347,6 +339,14 @@ const VenueManagerDashboard = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venues.length]); // Refresh when number of venues changes
+
+  // Refresh bookings when bookings tab is opened
+  useEffect(() => {
+    if (activeTab === 'bookings' && venues.length > 0) {
+      refreshBookings();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]); // Refresh when bookings tab is activated
 
   // Refresh venues after creating/updating/deleting
   const refreshVenues = async () => {
@@ -366,13 +366,12 @@ const VenueManagerDashboard = () => {
           .map((venue) => transformVenueData(venue))
           .filter((venue): venue is Venue => venue !== null);
         setVenues(transformedVenues);
-        console.log('✅ Venues refreshed:', transformedVenues);
         
         // Refresh bookings after venues are updated
         await refreshBookings();
       }
     } catch (err: unknown) {
-      console.error('❌ Error refreshing venues:', err);
+      // Error refreshing venues
     }
   };
 
@@ -395,7 +394,6 @@ const VenueManagerDashboard = () => {
 
     try {
       await venuesApi.delete(venueId);
-      console.log('✅ Venue deleted successfully');
 
       // Refresh venues list after successful delete
       await refreshVenues();
@@ -404,7 +402,6 @@ const VenueManagerDashboard = () => {
         err instanceof Error
           ? err.message
           : 'Failed to delete venue. Please try again.';
-      console.error('❌ Error deleting venue:', err);
       setError(errorMessage);
       alert(errorMessage);
     }
@@ -469,10 +466,6 @@ const VenueManagerDashboard = () => {
         apiData.rating = venueData.rating;
       }
 
-      console.log(
-        '📝 Venue data being sent to API:',
-        JSON.stringify(apiData, null, 2)
-      );
 
       if (editingVenue) {
         // Update existing venue
@@ -525,7 +518,6 @@ const VenueManagerDashboard = () => {
             amenities: venueData.amenities,
           };
           setVenues([...venues, newVenue]);
-          console.log('✅ Venue created successfully:', newVenue);
         }
       }
 
@@ -539,7 +531,6 @@ const VenueManagerDashboard = () => {
         err instanceof Error
           ? err.message
           : 'Failed to save venue. Please try again.';
-      console.error('❌ Error saving venue:', err);
       setError(errorMessage);
       alert(errorMessage);
     }
@@ -569,7 +560,6 @@ const VenueManagerDashboard = () => {
               alt: profileData.name || 'Profile avatar',
             },
           });
-          console.log('✅ Avatar updated successfully');
           
           // Update user data in localStorage
           const userData = getUserData();
@@ -580,7 +570,6 @@ const VenueManagerDashboard = () => {
             });
           }
         } catch (err) {
-          console.error('❌ Error updating avatar:', err);
           alert('Failed to save avatar. Please try again.');
           // Revert to previous avatar on error
           const userData = getUserData();
@@ -594,7 +583,6 @@ const VenueManagerDashboard = () => {
       };
       reader.readAsDataURL(file);
     } catch (err) {
-      console.error('❌ Error reading file:', err);
       alert('Failed to read image file. Please try again.');
     }
   };
@@ -675,7 +663,7 @@ const VenueManagerDashboard = () => {
                 </h2>
                 <button
                   onClick={handleCreateVenue}
-                  className="py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                  className="py-2.5 px-5 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
                   + Create New Venue
                 </button>
               </div>
@@ -699,7 +687,7 @@ const VenueManagerDashboard = () => {
                   </p>
                   <button
                     onClick={handleCreateVenue}
-                    className="py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                    className="py-2.5 px-5 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
                     Create Your First Venue
                   </button>
                 </div>
@@ -754,7 +742,7 @@ const VenueManagerDashboard = () => {
                           </div>
                           <button
                             onClick={() => navigate(`/venue/${venue.id}`)}
-                            className="w-full py-2.5 px-4 bg-black text-white border-none rounded text-sm font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                            className="w-full py-2.5 px-4 bg-[#0369a1] text-white border-none rounded text-sm font-medium cursor-pointer transition-all hover:opacity-90">
                             Preview
                           </button>
                         </div>
@@ -769,9 +757,17 @@ const VenueManagerDashboard = () => {
           {/* Bookings Tab */}
           {activeTab === 'bookings' && (
             <div>
-              <h2 className="text-2xl font-bold text-holidaze-gray m-0 mb-6">
-                Upcoming Bookings ({bookings.length})
-              </h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-holidaze-gray m-0">
+                  Upcoming Bookings ({bookings.length})
+                </h2>
+                <button
+                  onClick={refreshBookings}
+                  disabled={isLoadingBookings}
+                  className="py-2.5 px-5 bg-white text-holidaze-gray border border-holidaze-border rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isLoadingBookings ? 'Refreshing...' : 'Refresh'}
+                </button>
+              </div>
 
               {isLoadingBookings ? (
                 <div className="bg-white border border-holidaze-border rounded-lg p-12 text-center">

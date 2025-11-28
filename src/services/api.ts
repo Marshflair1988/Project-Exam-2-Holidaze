@@ -4,7 +4,7 @@ const API_BASE_URL =
 const API_KEY = import.meta.env.VITE_NOROFF_API_KEY;
 
 if (!API_KEY) {
-  console.error('⚠️ VITE_NOROFF_API_KEY is not set in environment variables');
+  // API key not set
 }
 
 export interface RegisterData {
@@ -113,25 +113,6 @@ const apiCall = async <T>(
     ...options.headers,
   };
 
-  // Log request details for debugging
-  if (
-    options.body &&
-    (endpoint === '/auth/register' || endpoint.includes('/holidaze/venues'))
-  ) {
-    try {
-      const bodyData = JSON.parse(options.body as string);
-      console.log('🚀 API Request:', {
-        endpoint: `${API_BASE_URL}${endpoint}`,
-        method: options.method || 'GET',
-        body:
-          endpoint === '/auth/register'
-            ? { ...bodyData, password: '***' } // Hide password in logs
-            : bodyData,
-      });
-    } catch (e) {
-      // Ignore parse errors
-    }
-  }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
@@ -156,29 +137,6 @@ const apiCall = async <T>(
       (errorData.statusCode as string) ||
       `API Error: ${response.statusText}`;
 
-    // Log full error details for debugging
-    console.error('API Error:', {
-      status: response.status,
-      statusText: response.statusText,
-      errorData,
-      errors,
-      endpoint,
-    });
-
-    // Log the full error response structure
-    if (errors && errors.length > 0) {
-      console.error('Error details:', errors);
-      errors.forEach((error, index) => {
-        console.error(`Error ${index + 1}:`, {
-          message: error.message,
-          field: error.field,
-          path: (error as { path?: string }).path,
-        });
-      });
-    }
-    if (errorData) {
-      console.error('Full error data:', JSON.stringify(errorData, null, 2));
-    }
 
     throw new Error(errorMessage);
   }
@@ -211,10 +169,6 @@ const apiCall = async <T>(
     return JSON.parse(text) as ApiResponse<T>;
   } catch (parseError) {
     // If parsing fails, return empty response
-    console.warn(
-      '⚠️ Failed to parse JSON response, returning empty response:',
-      parseError
-    );
     return {
       data: null as T,
       meta: {},
@@ -287,9 +241,6 @@ export const venuesApi = {
           }
 
           allVenues.push(...response.data);
-          console.log(
-            `📄 Fetched page ${page}: ${response.data.length} venues (total: ${allVenues.length})`
-          );
 
           // Check if there are more pages
           // If we got less than the limit, we've reached the end
@@ -317,7 +268,6 @@ export const venuesApi = {
           hasMore = false;
         }
       } catch (error) {
-        console.error(`Error fetching page ${page}:`, error);
         // If it's a 404 or empty response, we've reached the end
         if (
           error instanceof Error &&
@@ -326,23 +276,11 @@ export const venuesApi = {
           hasMore = false;
         } else {
           // For other errors, stop pagination to avoid infinite loops
-          console.warn(`Stopping pagination due to error on page ${page}`);
           hasMore = false;
         }
       }
     }
 
-    if (page > maxPages) {
-      console.warn(
-        `Reached maximum page limit (${maxPages}). There may be more venues available.`
-      );
-    }
-
-    console.log(
-      `✅ Pagination complete: Fetched ${allVenues.length} venues across ${
-        page - 1
-      } page(s)`
-    );
     return allVenues;
   },
 

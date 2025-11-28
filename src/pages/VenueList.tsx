@@ -127,11 +127,7 @@ const VenueList = () => {
 
       try {
         // Fetch all venues across all pages
-        console.log('🔄 Fetching all venues with pagination...');
         const allVenuesData = await venuesApi.getAllPaginated(false);
-        console.log(
-          `✅ Fetched ${allVenuesData.length} venues across all pages`
-        );
 
         if (Array.isArray(allVenuesData)) {
           const transformedVenues = allVenuesData
@@ -140,7 +136,6 @@ const VenueList = () => {
 
           setVenues(transformedVenues);
           setFilteredVenues(transformedVenues);
-          console.log(`✅ Transformed ${transformedVenues.length} venues`);
         } else {
           throw new Error('Invalid response format from API');
         }
@@ -149,7 +144,6 @@ const VenueList = () => {
           err instanceof Error
             ? err.message
             : 'Failed to load venues. Please try again.';
-        console.error('❌ Error fetching venues:', err);
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -421,7 +415,7 @@ const VenueList = () => {
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                      className="py-2.5 px-5 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
                       Clear Search
                     </button>
                   )}
