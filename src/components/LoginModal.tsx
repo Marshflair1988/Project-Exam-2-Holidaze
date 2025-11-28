@@ -175,7 +175,7 @@ const LoginModal = ({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none bg-black text-white hover:bg-holidaze-gray mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
+              className="w-full py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none bg-[#0369a1] text-white hover:opacity-90 mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
 
@@ -184,7 +184,7 @@ const LoginModal = ({
               <button
                 type="button"
                 onClick={onSwitchToRegister}
-                className="text-black font-medium hover:underline bg-transparent border-none cursor-pointer p-0">
+                className="text-[#0369a1] font-medium hover:underline bg-transparent border-none cursor-pointer p-0">
                 Sign up here
               </button>
             </div>

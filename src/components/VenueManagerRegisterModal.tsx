@@ -288,7 +288,7 @@ const VenueManagerRegisterModal = ({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none bg-black text-white hover:bg-holidaze-gray mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
+              className="w-full py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none bg-[#0369a1] text-white hover:opacity-90 mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
               {isLoading ? 'Creating account...' : 'Create Account'}
             </button>
 
@@ -297,7 +297,7 @@ const VenueManagerRegisterModal = ({
               <button
                 type="button"
                 onClick={onSwitchToLogin}
-                className="text-black font-medium hover:underline bg-transparent border-none cursor-pointer p-0">
+                className="text-[#0369a1] font-medium hover:underline bg-transparent border-none cursor-pointer p-0">
                 Sign in here
               </button>
             </div>
@@ -307,7 +307,7 @@ const VenueManagerRegisterModal = ({
                 <button
                   type="button"
                   onClick={onSwitchToUser}
-                  className="text-sm text-holidaze-light-gray hover:text-holidaze-gray transition-colors bg-transparent border-none cursor-pointer p-0">
+                  className="text-sm text-[#0369a1] hover:opacity-80 transition-colors bg-transparent border-none cursor-pointer p-0">
                   Are you a customer? Register here
                 </button>
               </div>
