@@ -9,6 +9,7 @@ import {
   setUserData,
   venuesApi,
   profilesApi,
+  bookingsApi,
 } from '../services/api';
 
 interface Venue {
