@@ -124,26 +124,36 @@ const UserProfile = () => {
         } catch (err) {
           // If profile endpoint doesn't exist, use getAll and filter client-side
           const allBookingsResponse = await bookingsApi.getAll();
-          
+
           // Filter bookings by customer name if available
-          if (allBookingsResponse.data && Array.isArray(allBookingsResponse.data)) {
-            const filteredBookings = allBookingsResponse.data.filter((booking: unknown) => {
-              const b = booking as { customer?: { name?: string }; customerName?: string };
-              const customerName = b.customer?.name || b.customerName;
-              return customerName === userData.name;
-            });
+          if (
+            allBookingsResponse.data &&
+            Array.isArray(allBookingsResponse.data)
+          ) {
+            const filteredBookings = allBookingsResponse.data.filter(
+              (booking: unknown) => {
+                const b = booking as {
+                  customer?: { name?: string };
+                  customerName?: string;
+                };
+                const customerName = b.customer?.name || b.customerName;
+                return customerName === userData.name;
+              }
+            );
             response = { ...allBookingsResponse, data: filteredBookings };
           } else {
             response = allBookingsResponse;
           }
         }
-        
 
         if (response.data && Array.isArray(response.data)) {
           // Log first booking to see structure
           if (response.data.length > 0) {
             console.log('📋 Sample booking structure:', response.data[0]);
-            console.log('📋 Full booking keys:', Object.keys(response.data[0] as Record<string, unknown>));
+            console.log(
+              '📋 Full booking keys:',
+              Object.keys(response.data[0] as Record<string, unknown>)
+            );
           }
 
           // Transform API bookings to local Booking format
@@ -154,7 +164,12 @@ const UserProfile = () => {
                 dateFrom?: string;
                 dateTo?: string;
                 guests?: number;
-                venue?: { id?: string; name?: string; media?: Array<{ url?: string }>; price?: number };
+                venue?: {
+                  id?: string;
+                  name?: string;
+                  media?: Array<{ url?: string }>;
+                  price?: number;
+                };
                 venueId?: string;
                 created?: string;
                 updated?: string;
@@ -277,7 +292,6 @@ const UserProfile = () => {
         venueId: bookingData.venueId,
       });
 
-
       // Fetch venue details to get name, image, and price
       let venueName = 'Unknown Venue';
       let venueImage = 'https://via.placeholder.com/600x400?text=No+Image';
@@ -310,7 +324,8 @@ const UserProfile = () => {
       const totalPrice = venuePrice * nights;
 
       // Extract booking ID from response
-      const bookingId = (response.data as { id?: string })?.id || Date.now().toString();
+      const bookingId =
+        (response.data as { id?: string })?.id || Date.now().toString();
 
       const newBooking: Booking = {
         id: bookingId,
@@ -338,7 +353,7 @@ const UserProfile = () => {
 
   const handleEditBooking = async (booking: Booking) => {
     setSelectedBooking(booking);
-    
+
     // Fetch venue details for the booking
     try {
       const venueResponse = await venuesApi.getById(booking.venueId);
@@ -356,7 +371,7 @@ const UserProfile = () => {
           rating?: number;
           media?: Array<{ url?: string }>;
         };
-        
+
         const locationParts: string[] = [];
         if (venue.location?.city) locationParts.push(venue.location.city);
         if (venue.location?.country) locationParts.push(venue.location.country);
@@ -372,9 +387,11 @@ const UserProfile = () => {
           price: venue.price || 0,
           maxGuests: venue.maxGuests || booking.guests,
           rating: venue.rating || 0,
-          images: venue.media?.map((m) => m.url || '').filter((url) => url !== '') || [booking.venueImage],
+          images: venue.media
+            ?.map((m) => m.url || '')
+            .filter((url) => url !== '') || [booking.venueImage],
         };
-        
+
         setSelectedVenue(venueData);
       }
     } catch (err) {
@@ -390,7 +407,7 @@ const UserProfile = () => {
         images: [booking.venueImage],
       });
     }
-    
+
     setIsEditBookingOpen(true);
   };
 
@@ -483,7 +500,7 @@ const UserProfile = () => {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const dataUrl = reader.result as string;
-        
+
         // Update local state for immediate UI feedback
         setProfileData({
           ...profileData,
@@ -501,13 +518,16 @@ const UserProfile = () => {
               alt: profileData.name || 'Profile avatar',
             },
           });
-          
+
           // Update user data in localStorage
           const userData = getUserData();
           if (userData) {
             setUserData({
               ...userData,
-              avatar: { url: dataUrl, alt: profileData.name || 'Profile avatar' },
+              avatar: {
+                url: dataUrl,
+                alt: profileData.name || 'Profile avatar',
+              },
             });
           }
         } catch (err) {
@@ -736,7 +756,9 @@ const UserProfile = () => {
               <div className="bg-white border border-holidaze-border rounded-lg p-6 sm:p-8 max-w-2xl">
                 {isLoadingProfile ? (
                   <div className="text-center py-8">
-                    <p className="text-holidaze-light-gray">Loading profile...</p>
+                    <p className="text-holidaze-light-gray">
+                      Loading profile...
+                    </p>
                   </div>
                 ) : (
                   <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 mb-8">
@@ -747,69 +769,69 @@ const UserProfile = () => {
                           alt="Profile"
                           className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-holidaze-border"
                         />
-                      <label
-                        htmlFor="user-avatar-upload"
-                        className="absolute bottom-0 right-0 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-holidaze-gray transition-colors"
-                        title="Change avatar">
-                        <span className="text-sm">📷</span>
-                        <input
-                          type="file"
-                          id="user-avatar-upload"
-                          accept="image/*"
-                          onChange={handleAvatarChange}
-                          className="hidden"
-                        />
-                      </label>
+                        <label
+                          htmlFor="user-avatar-upload"
+                          className="absolute bottom-0 right-0 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-holidaze-gray transition-colors"
+                          title="Change avatar">
+                          <span className="text-sm">📷</span>
+                          <input
+                            type="file"
+                            id="user-avatar-upload"
+                            accept="image/*"
+                            onChange={handleAvatarChange}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                      <p className="text-sm text-holidaze-light-gray text-center sm:text-left">
+                        Click the camera icon to update your profile picture
+                      </p>
                     </div>
-                    <p className="text-sm text-holidaze-light-gray text-center sm:text-left">
-                      Click the camera icon to update your profile picture
-                    </p>
-                  </div>
 
-                  <div className="flex-1 space-y-4">
-                    <div>
-                      <label
-                        htmlFor="profile-name"
-                        className="block text-sm font-medium text-holidaze-gray mb-2">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        id="profile-name"
-                        value={profileData.name}
-                        onChange={(e) =>
-                          setProfileData({
-                            ...profileData,
-                            name: e.target.value,
-                          })
-                        }
-                        className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                      />
+                    <div className="flex-1 space-y-4">
+                      <div>
+                        <label
+                          htmlFor="profile-name"
+                          className="block text-sm font-medium text-holidaze-gray mb-2">
+                          Name
+                        </label>
+                        <input
+                          type="text"
+                          id="profile-name"
+                          value={profileData.name}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              name: e.target.value,
+                            })
+                          }
+                          className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="profile-email"
+                          className="block text-sm font-medium text-holidaze-gray mb-2">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          id="profile-email"
+                          value={profileData.email}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              email: e.target.value,
+                            })
+                          }
+                          className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
+                      </div>
+                      <button className="py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                        Save Changes
+                      </button>
                     </div>
-                    <div>
-                      <label
-                        htmlFor="profile-email"
-                        className="block text-sm font-medium text-holidaze-gray mb-2">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        id="profile-email"
-                        value={profileData.email}
-                        onChange={(e) =>
-                          setProfileData({
-                            ...profileData,
-                            email: e.target.value,
-                          })
-                        }
-                        className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                      />
-                    </div>
-                    <button className="py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
-                      Save Changes
-                    </button>
                   </div>
-                </div>
                 )}
 
                 {/* Delete Account Section */}
