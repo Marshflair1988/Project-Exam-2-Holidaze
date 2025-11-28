@@ -149,7 +149,7 @@ const UserProfile = () => {
           // Log first booking to see structure
           if (response.data.length > 0) {
             console.log('📋 Sample booking structure:', response.data[0]);
-            console.log('📋 Full booking keys:', Object.keys(response.data[0]));
+            console.log('📋 Full booking keys:', Object.keys(response.data[0] as Record<string, unknown>));
           }
 
           // Transform API bookings to local Booking format
@@ -227,7 +227,7 @@ const UserProfile = () => {
               );
               const totalPrice = venuePrice * nights;
 
-              return {
+              const transformedBooking: Booking = {
                 id: bookingId,
                 venueId,
                 venueName,
@@ -236,15 +236,16 @@ const UserProfile = () => {
                 checkOut: apiBooking.dateTo || '',
                 guests: apiBooking.guests || 1,
                 totalPrice,
-                status: 'confirmed' as const, // API bookings are confirmed when created
+                status: 'confirmed', // API bookings are confirmed when created
               };
+              return transformedBooking;
             })
           );
 
           // Filter out null values
           const validBookings = transformedBookings.filter(
             (b): b is Booking => b !== null
-          );
+          ) as Booking[];
           setBookings(validBookings);
           console.log(`✅ Transformed ${validBookings.length} bookings`);
         }
@@ -327,6 +328,7 @@ const UserProfile = () => {
 
       const newBooking: Booking = {
         id: bookingId,
+        venueId: bookingData.venueId,
         venueName,
         venueImage,
         checkIn: bookingData.checkIn,
@@ -417,13 +419,13 @@ const UserProfile = () => {
 
     try {
       // Update booking via API
-      const response = await bookingsApi.update(selectedBooking.id, {
+      await bookingsApi.update(selectedBooking.id, {
         dateFrom: bookingData.checkIn,
         dateTo: bookingData.checkOut,
         guests: bookingData.guests,
       });
 
-      console.log('✅ Booking updated:', response);
+      console.log('✅ Booking updated');
 
       // Fetch venue details to recalculate price
       let venuePrice = 0;
