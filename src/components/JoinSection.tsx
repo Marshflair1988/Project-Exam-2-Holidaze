@@ -1,34 +1,23 @@
 import { useState } from 'react';
 import UserRegisterModal from './UserRegisterModal';
 import VenueManagerRegisterModal from './VenueManagerRegisterModal';
-import UserLoginModal from './UserLoginModal';
-import VenueManagerLoginModal from './VenueManagerLoginModal';
+import LoginModal from './LoginModal';
 
 const JoinSection = () => {
   const [isUserRegisterOpen, setIsUserRegisterOpen] = useState(false);
   const [isVenueManagerRegisterOpen, setIsVenueManagerRegisterOpen] =
     useState(false);
-  const [isUserLoginOpen, setIsUserLoginOpen] = useState(false);
-  const [isVenueManagerLoginOpen, setIsVenueManagerLoginOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const switchToUserRegister = () => {
-    setIsUserLoginOpen(false);
+    setIsLoginOpen(false);
     setIsUserRegisterOpen(true);
   };
 
-  const switchToUserLogin = () => {
+  const switchToLogin = () => {
     setIsUserRegisterOpen(false);
-    setIsUserLoginOpen(true);
-  };
-
-  const switchToVenueManagerRegister = () => {
-    setIsVenueManagerLoginOpen(false);
-    setIsVenueManagerRegisterOpen(true);
-  };
-
-  const switchToVenueManagerLogin = () => {
     setIsVenueManagerRegisterOpen(false);
-    setIsVenueManagerLoginOpen(true);
+    setIsLoginOpen(true);
   };
   return (
     <section className="w-full py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-[#e5e7eb4c]">
@@ -111,7 +100,7 @@ const JoinSection = () => {
       <UserRegisterModal
         isOpen={isUserRegisterOpen}
         onClose={() => setIsUserRegisterOpen(false)}
-        onSwitchToLogin={switchToUserLogin}
+        onSwitchToLogin={switchToLogin}
         onSwitchToVenueManager={() => {
           setIsUserRegisterOpen(false);
           setIsVenueManagerRegisterOpen(true);
@@ -120,29 +109,16 @@ const JoinSection = () => {
       <VenueManagerRegisterModal
         isOpen={isVenueManagerRegisterOpen}
         onClose={() => setIsVenueManagerRegisterOpen(false)}
-        onSwitchToLogin={switchToVenueManagerLogin}
+        onSwitchToLogin={switchToLogin}
         onSwitchToUser={() => {
           setIsVenueManagerRegisterOpen(false);
           setIsUserRegisterOpen(true);
         }}
       />
-      <UserLoginModal
-        isOpen={isUserLoginOpen}
-        onClose={() => setIsUserLoginOpen(false)}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
         onSwitchToRegister={switchToUserRegister}
-        onSwitchToVenueManager={() => {
-          setIsUserLoginOpen(false);
-          setIsVenueManagerLoginOpen(true);
-        }}
-      />
-      <VenueManagerLoginModal
-        isOpen={isVenueManagerLoginOpen}
-        onClose={() => setIsVenueManagerLoginOpen(false)}
-        onSwitchToRegister={switchToVenueManagerRegister}
-        onSwitchToUser={() => {
-          setIsVenueManagerLoginOpen(false);
-          setIsUserLoginOpen(true);
-        }}
       />
     </section>
   );

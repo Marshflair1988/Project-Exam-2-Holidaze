@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import VenueManagerRegisterModal from './VenueManagerRegisterModal';
-import VenueManagerLoginModal from './VenueManagerLoginModal';
+import LoginModal from './LoginModal';
 
 const HeroSection = () => {
   const [isVenueManagerRegisterOpen, setIsVenueManagerRegisterOpen] =
     useState(false);
-  const [isVenueManagerLoginOpen, setIsVenueManagerLoginOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const switchToVenueManagerRegister = () => {
-    setIsVenueManagerLoginOpen(false);
+    setIsLoginOpen(false);
     setIsVenueManagerRegisterOpen(true);
   };
 
-  const switchToVenueManagerLogin = () => {
+  const switchToLogin = () => {
     setIsVenueManagerRegisterOpen(false);
-    setIsVenueManagerLoginOpen(true);
+    setIsLoginOpen(true);
   };
 
   return (
@@ -55,11 +55,11 @@ const HeroSection = () => {
       <VenueManagerRegisterModal
         isOpen={isVenueManagerRegisterOpen}
         onClose={() => setIsVenueManagerRegisterOpen(false)}
-        onSwitchToLogin={switchToVenueManagerLogin}
+        onSwitchToLogin={switchToLogin}
       />
-      <VenueManagerLoginModal
-        isOpen={isVenueManagerLoginOpen}
-        onClose={() => setIsVenueManagerLoginOpen(false)}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
         onSwitchToRegister={switchToVenueManagerRegister}
       />
     </section>

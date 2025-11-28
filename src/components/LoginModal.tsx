@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   authApi,
   profilesApi,
@@ -9,12 +7,43 @@ import {
   setUserData,
 } from '../services/api';
 
-const UserLogin = () => {
+interface LoginModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSwitchToRegister?: () => void;
+}
+
+const LoginModal = ({
+  isOpen,
+  onClose,
+  onSwitchToRegister,
+}: LoginModalProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setEmail('');
+      setPassword('');
+      setError('');
+    }
+  }, [isOpen]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +79,7 @@ const UserLogin = () => {
           venueManager: venueManager,
         });
 
+        onClose();
         // Redirect based on user type
         if (venueManager) {
           // Venue manager - redirect to admin dashboard
@@ -72,23 +102,36 @@ const UserLogin = () => {
     }
   };
 
-  return (
-    <div className="w-full min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 w-full flex items-center justify-center py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white">
-        <div className="w-full max-w-[450px]">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-holidaze-gray m-0 tracking-tight">
-              User Login
-            </h1>
-            <p className="text-base text-holidaze-light-gray mt-2 sm:mt-3">
-              Sign in to your account to browse and book venues
-            </p>
-          </div>
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white border border-holidaze-border rounded-lg p-6 sm:p-8">
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
+      onClick={handleBackdropClick}>
+      <div className="bg-white rounded-lg shadow-xl max-w-[450px] w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white border-b border-holidaze-border px-6 py-4 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-holidaze-gray m-0">
+            Login
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-holidaze-light-gray hover:text-holidaze-gray text-2xl leading-none bg-transparent border-none cursor-pointer p-0 w-8 h-8 flex items-center justify-center">
+            ×
+          </button>
+        </div>
+
+        <div className="p-6 sm:p-8">
+          <p className="text-base text-holidaze-light-gray mb-6 text-center">
+            Sign in to your account
+          </p>
+
+          <form onSubmit={handleSubmit}>
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
                 {error}
@@ -97,13 +140,13 @@ const UserLogin = () => {
 
             <div className="mb-4">
               <label
-                htmlFor="email"
+                htmlFor="modal-login-email"
                 className="block text-sm font-medium text-holidaze-gray mb-2">
                 Email
               </label>
               <input
                 type="email"
-                id="email"
+                id="modal-login-email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -114,13 +157,13 @@ const UserLogin = () => {
 
             <div className="mb-6">
               <label
-                htmlFor="password"
+                htmlFor="modal-login-password"
                 className="block text-sm font-medium text-holidaze-gray mb-2">
                 Password
               </label>
               <input
                 type="password"
-                id="password"
+                id="modal-login-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -138,26 +181,19 @@ const UserLogin = () => {
 
             <div className="text-center text-sm text-holidaze-light-gray">
               Don't have an account?{' '}
-              <Link
-                to="/register/user"
-                className="text-black font-medium hover:underline">
+              <button
+                type="button"
+                onClick={onSwitchToRegister}
+                className="text-black font-medium hover:underline bg-transparent border-none cursor-pointer p-0">
                 Sign up here
-              </Link>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-holidaze-border text-center">
-              <Link
-                to="/login/venue-manager"
-                className="text-sm text-holidaze-light-gray hover:text-holidaze-gray transition-colors">
-                Are you a venue manager? Sign in here
-              </Link>
+              </button>
             </div>
           </form>
         </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 };
 
-export default UserLogin;
+export default LoginModal;
+

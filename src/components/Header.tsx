@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import UserLoginModal from './UserLoginModal';
+import LoginModal from './LoginModal';
 import UserRegisterModal from './UserRegisterModal';
-import VenueManagerLoginModal from './VenueManagerLoginModal';
 import VenueManagerRegisterModal from './VenueManagerRegisterModal';
 import {
   getAccessToken,
@@ -14,9 +13,8 @@ import {
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isUserLoginOpen, setIsUserLoginOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isUserRegisterOpen, setIsUserRegisterOpen] = useState(false);
-  const [isVenueManagerLoginOpen, setIsVenueManagerLoginOpen] = useState(false);
   const [isVenueManagerRegisterOpen, setIsVenueManagerRegisterOpen] =
     useState(false);
   const [user, setUser] = useState<{
@@ -75,23 +73,14 @@ const Header = () => {
   };
 
   const switchToUserRegister = () => {
-    setIsUserLoginOpen(false);
+    setIsLoginOpen(false);
     setIsUserRegisterOpen(true);
   };
 
-  const switchToUserLogin = () => {
+  const switchToLogin = () => {
     setIsUserRegisterOpen(false);
-    setIsUserLoginOpen(true);
-  };
-
-  const switchToVenueManagerRegister = () => {
-    setIsVenueManagerLoginOpen(false);
-    setIsVenueManagerRegisterOpen(true);
-  };
-
-  const switchToVenueManagerLogin = () => {
     setIsVenueManagerRegisterOpen(false);
-    setIsVenueManagerLoginOpen(true);
+    setIsLoginOpen(true);
   };
 
   return (
@@ -176,7 +165,7 @@ const Header = () => {
             ) : (
               <>
                 <button
-                  onClick={() => setIsUserLoginOpen(true)}
+                  onClick={() => setIsLoginOpen(true)}
                   className="py-2.5 px-5 text-[15px] font-medium rounded cursor-pointer transition-all bg-white text-[#0369a1] border-none hover:bg-gray-100">
                   Sign In
                 </button>
@@ -233,7 +222,7 @@ const Header = () => {
             ) : (
               <>
                 <button
-                  onClick={() => setIsUserLoginOpen(true)}
+                  onClick={() => setIsLoginOpen(true)}
                   className="py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded cursor-pointer transition-all bg-white text-[#0369a1] border-none hover:bg-gray-100 whitespace-nowrap">
                   Sign In
                 </button>
@@ -306,10 +295,10 @@ const Header = () => {
       </div>
 
       {/* Modals */}
-      <UserLoginModal
-        isOpen={isUserLoginOpen}
+      <LoginModal
+        isOpen={isLoginOpen}
         onClose={() => {
-          setIsUserLoginOpen(false);
+          setIsLoginOpen(false);
           // Refresh user state after login
           const token = getAccessToken();
           const userData = getUserData();
@@ -318,10 +307,6 @@ const Header = () => {
           }
         }}
         onSwitchToRegister={switchToUserRegister}
-        onSwitchToVenueManager={() => {
-          setIsUserLoginOpen(false);
-          setIsVenueManagerLoginOpen(true);
-        }}
       />
       <UserRegisterModal
         isOpen={isUserRegisterOpen}
@@ -334,27 +319,10 @@ const Header = () => {
             setUser(userData);
           }
         }}
-        onSwitchToLogin={switchToUserLogin}
+        onSwitchToLogin={switchToLogin}
         onSwitchToVenueManager={() => {
           setIsUserRegisterOpen(false);
           setIsVenueManagerRegisterOpen(true);
-        }}
-      />
-      <VenueManagerLoginModal
-        isOpen={isVenueManagerLoginOpen}
-        onClose={() => {
-          setIsVenueManagerLoginOpen(false);
-          // Refresh user state after login
-          const token = getAccessToken();
-          const userData = getUserData();
-          if (token && userData) {
-            setUser(userData);
-          }
-        }}
-        onSwitchToRegister={switchToVenueManagerRegister}
-        onSwitchToUser={() => {
-          setIsVenueManagerLoginOpen(false);
-          setIsUserLoginOpen(true);
         }}
       />
       <VenueManagerRegisterModal
@@ -368,7 +336,7 @@ const Header = () => {
             setUser(userData);
           }
         }}
-        onSwitchToLogin={switchToVenueManagerLogin}
+        onSwitchToLogin={switchToLogin}
         onSwitchToUser={() => {
           setIsVenueManagerRegisterOpen(false);
           setIsUserRegisterOpen(true);
