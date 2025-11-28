@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import VenueManagerRegisterModal from './VenueManagerRegisterModal';
 import LoginModal from './LoginModal';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const [isVenueManagerRegisterOpen, setIsVenueManagerRegisterOpen] =
     useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -29,7 +31,9 @@ const HeroSection = () => {
             apartments to luxury villas, book your next adventure with Holidaze.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
-            <button className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all bg-[#0369a1] text-white border-none hover:opacity-90 w-full sm:w-auto text-center">
+            <button
+              onClick={() => navigate('/venues')}
+              className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all bg-[#0369a1] text-white border-none hover:opacity-90 w-full sm:w-auto text-center">
               Browse Venues
             </button>
             <button
