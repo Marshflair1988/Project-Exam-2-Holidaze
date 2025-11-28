@@ -88,6 +88,9 @@ const FeaturedVenues = () => {
           setTopRatedVenues(selected);
         }
       } catch (err: unknown) {
+        console.error('❌ Error fetching top rated venues:', err);
+        // Set empty array on error so UI shows "No venues available" message
+        setTopRatedVenues([]);
       } finally {
         setIsLoading(false);
       }

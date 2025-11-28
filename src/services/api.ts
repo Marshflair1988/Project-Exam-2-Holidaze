@@ -4,7 +4,7 @@ const API_BASE_URL =
 const API_KEY = import.meta.env.VITE_NOROFF_API_KEY;
 
 if (!API_KEY) {
-  // API key not set
+  console.warn('⚠️ VITE_NOROFF_API_KEY is not set in environment variables. API calls will fail.');
 }
 
 export interface RegisterData {
