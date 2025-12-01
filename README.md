@@ -18,18 +18,19 @@ A modern front-end application for Holidaze, an accommodation booking site that 
 
 - Log in and log out
 - **Create bookings** - Full API integration for creating bookings
-- **View upcoming bookings** - Fetched from API with venue details
+- **View upcoming bookings** - Fetched from API with venue details (filtered to show only future bookings)
 - **Edit bookings** - Update check-in/check-out dates and number of guests
 - **Cancel bookings** - Delete bookings via API
-- **Update avatar/profile picture** - Saves to API via profile update endpoint
+- **Update avatar/profile picture** - Update via modal with image URL input
 - Browse and search venues
 
 ### Venue Managers
 
 - Log in and log out
 - Create, edit, and delete venues
-- **View upcoming bookings for their venues** - Fetched from API for all owned venues
-- **Update avatar/profile picture** - Saves to API via profile update endpoint
+- **View upcoming bookings for their venues** - Fetched from API for all owned venues (filtered to show only future bookings)
+- **Update avatar/profile picture** - Update via modal with image URL input
+- **Delete account** - Remove profile and all associated data
 - Manage venue availability
 
 ## Technologies
@@ -136,7 +137,8 @@ The application uses the Noroff Holidaze API. All API calls are configured in `s
   - `DELETE /holidaze/bookings/:id` - Delete a booking
 - **Profiles**:
   - `GET /holidaze/profiles/:name` - Get profile data
-  - `PUT /holidaze/profiles` - Update profile (including avatar)
+  - `PUT /holidaze/profiles/:name` - Update profile (including avatar)
+  - `PUT /auth/profile` - Update profile (fallback endpoint)
   - `DELETE /auth/profile` - Delete profile
 
 ### Authentication
@@ -203,9 +205,10 @@ VITE_NOROFF_API_KEY=your-api-key-here
 - **Edit Booking**: Customers can edit booking dates and guests from their profile
 - **Cancel Booking**: Customers can cancel bookings, which removes them via API
 - **View Bookings**:
-  - Customers see their own bookings in `/user/profile`
-  - Venue managers see bookings for all their venues in `/venue-manager/dashboard`
+  - Customers see their own upcoming bookings in `/user/profile` (filtered to show only future bookings)
+  - Venue managers see upcoming bookings for all their venues in `/venue-manager/dashboard` (filtered to show only future bookings)
   - Bookings are fetched from API with venue details included
+  - Only bookings with check-out date >= today are displayed
 
 ### Venue Management
 
@@ -228,10 +231,12 @@ VITE_NOROFF_API_KEY=your-api-key-here
 
 ### Profile Management
 
-- **Avatar Updates**: Both customers and venue managers can update their profile pictures
-- Avatar changes are saved to API via `PUT /holidaze/profiles`
+- **Avatar Updates**: Both customers and venue managers can update their profile pictures via a modal interface
+- Avatar updates use image URLs (HTTP/HTTPS) - API accepts URL format, not base64
+- Avatar changes are saved to API via `PUT /holidaze/profiles/:name` or `PUT /auth/profile`
 - Profile data is fetched from API on component mount
 - Changes persist across sessions via localStorage and API
+- **Delete Account**: Venue managers can delete their accounts from the profile tab (customers can also delete accounts)
 
 ## API Integration Details
 
@@ -248,9 +253,10 @@ The booking system is fully integrated with the Noroff API:
 
 ### Profile API
 
-- **Avatar Updates**: Profile pictures are saved as base64 data URLs (API accepts this format)
+- **Avatar Updates**: Profile pictures are updated via image URLs (HTTP/HTTPS) - users enter image URLs in a modal interface
 - **Profile Fetching**: Profile data is fetched on component mount and cached in localStorage
-- **Update Endpoint**: `PUT /holidaze/profiles` accepts avatar, name, email, bio, and other profile fields
+- **Update Endpoint**: `PUT /holidaze/profiles/:name` or `PUT /auth/profile` accepts avatar (as URL object), name, email, bio, and other profile fields
+- **Delete Account**: `DELETE /auth/profile` removes the user's profile and all associated data
 
 ## Troubleshooting
 
@@ -280,8 +286,9 @@ If you see errors about missing API key:
 
 - Check browser console for API errors
 - Verify authentication token is present (user must be logged in)
-- Ensure API endpoint `/holidaze/profiles` accepts PUT requests
-- Avatar is saved as base64 data URL - API must accept this format
+- Ensure API endpoint `/holidaze/profiles/:name` or `/auth/profile` accepts PUT requests
+- Avatar must be a valid HTTP/HTTPS image URL (not base64)
+- Open the "Update Avatar" modal from the profile tab to update your avatar
 
 ### Build Errors
 
