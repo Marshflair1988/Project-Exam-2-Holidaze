@@ -149,15 +149,6 @@ const UserProfile = () => {
         }
 
         if (response.data && Array.isArray(response.data)) {
-          // Log first booking to see structure
-          if (response.data.length > 0) {
-            console.log('📋 Sample booking structure:', response.data[0]);
-            console.log(
-              '📋 Full booking keys:',
-              Object.keys(response.data[0] as Record<string, unknown>)
-            );
-          }
-
           // Transform API bookings to local Booking format
           const transformedBookings = await Promise.all(
             response.data.map(async (booking: unknown) => {
@@ -248,10 +239,17 @@ const UserProfile = () => {
             })
           );
 
-          // Filter out null values
-          const validBookings = transformedBookings.filter(
-            (b): b is Booking => b !== null
-          ) as Booking[];
+          // Filter out null values and only show upcoming bookings (check-out date >= today)
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          const validBookings = transformedBookings
+            .filter((b): b is Booking => b !== null)
+            .filter((booking) => {
+              const checkOutDate = new Date(booking.checkOut);
+              checkOutDate.setHours(0, 0, 0, 0);
+              return checkOutDate >= today;
+            });
           setBookings(validBookings);
         }
       } catch (err: unknown) {
@@ -428,8 +426,6 @@ const UserProfile = () => {
         dateTo: bookingData.checkOut,
         guests: bookingData.guests,
       });
-
-      console.log('✅ Booking updated');
 
       // Fetch venue details to recalculate price
       let venuePrice = 0;

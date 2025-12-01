@@ -322,14 +322,24 @@ const VenueManagerDashboard = () => {
         }
       }
 
+      // Filter to only show upcoming bookings (check-out date >= today)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const upcomingBookings = allBookings.filter((booking) => {
+        const checkOutDate = new Date(booking.checkOut);
+        checkOutDate.setHours(0, 0, 0, 0);
+        return checkOutDate >= today;
+      });
+
       // Sort bookings by check-in date (upcoming first)
-      allBookings.sort((a, b) => {
+      upcomingBookings.sort((a, b) => {
         const dateA = new Date(a.checkIn).getTime();
         const dateB = new Date(b.checkIn).getTime();
         return dateA - dateB;
       });
 
-      setBookings(allBookings);
+      setBookings(upcomingBookings);
     } catch (err) {
       setBookings([]);
     } finally {
