@@ -12,6 +12,9 @@ interface VenueData {
   id: string;
   name: string;
   location: string;
+  address?: string;
+  city?: string;
+  country?: string;
   price: number;
   maxGuests: number;
   description: string;
@@ -217,6 +220,9 @@ const VenueDetails = () => {
             id: apiVenue.id,
             name: apiVenue.name,
             location: locationString,
+            address: apiVenue.location?.address,
+            city: apiVenue.location?.city,
+            country: apiVenue.location?.country,
             price: apiVenue.price || 0,
             maxGuests: apiVenue.maxGuests || 0,
             description: apiVenue.description || 'No description available.',
@@ -319,7 +325,6 @@ const VenueDetails = () => {
         guests: bookingData.guests,
         venueId: bookingData.venueId,
       });
-
 
       const checkInDate = new Date(bookingData.checkIn);
       const checkOutDate = new Date(bookingData.checkOut);
@@ -452,7 +457,7 @@ const VenueDetails = () => {
               <div className="grid grid-cols-5 gap-2 sm:gap-4 mb-6">
                 {venueData.images.map((image, index) => (
                   <button
-                    key={index}
+                    key={image || `image-${index}`}
                     onClick={() => setSelectedImage(index)}
                     className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                       selectedImage === index
@@ -513,9 +518,9 @@ const VenueDetails = () => {
                 Amenities
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                {venueData.amenities.map((amenity, index) => (
+                {venueData.amenities.map((amenity) => (
                   <div
-                    key={index}
+                    key={amenity.name}
                     className="flex items-center gap-3 p-4 bg-white border border-holidaze-border rounded-lg hover:shadow-md transition-shadow">
                     <span className="text-2xl">{amenity.icon}</span>
                     <span className="text-sm sm:text-base text-holidaze-gray font-medium">
@@ -525,6 +530,53 @@ const VenueDetails = () => {
                 ))}
               </div>
             </div>
+
+            {/* Location Section */}
+            {(venueData.address || venueData.city || venueData.country) && (
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-holidaze-gray m-0 mb-4">
+                  Location
+                </h2>
+                <div className="bg-white border border-holidaze-border rounded-lg p-6">
+                  <div className="mb-4">
+                    {venueData.address && (
+                      <p className="text-base text-holidaze-gray mb-1">
+                        <span className="font-medium">Address:</span>{' '}
+                        {venueData.address}
+                      </p>
+                    )}
+                    {(venueData.city || venueData.country) && (
+                      <p className="text-base text-holidaze-gray">
+                        {venueData.city && venueData.country
+                          ? `${venueData.city}, ${venueData.country}`
+                          : venueData.city || venueData.country}
+                      </p>
+                    )}
+                  </div>
+                  {/* Google Maps Embed */}
+                  <div className="w-full h-64 sm:h-80 rounded-lg overflow-hidden border border-holidaze-border">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                        venueData.address
+                          ? `${venueData.address}, ${venueData.city || ''}, ${
+                              venueData.country || ''
+                            }`
+                          : `${venueData.city || ''}, ${
+                              venueData.country || ''
+                            }`
+                      )}&output=embed`}
+                      title={`Map showing location of ${venueData.name}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Book Now Section */}
             <div className="bg-gray-50 border border-holidaze-border rounded-lg p-6 sm:p-8">
@@ -635,9 +687,9 @@ const VenueDetails = () => {
                 Available Rooms
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {venueData.rooms.map((room, index) => (
+                {venueData.rooms.map((room) => (
                   <div
-                    key={index}
+                    key={room.type}
                     className="bg-white border border-holidaze-border rounded-lg p-6 hover:shadow-lg transition-shadow">
                     <div className="flex justify-between items-start mb-4">
                       <div>

@@ -4,6 +4,9 @@ interface Venue {
   id: string;
   name: string;
   location: string;
+  address?: string;
+  city?: string;
+  country?: string;
   price: number;
   maxGuests: number;
   rating: number;
@@ -28,6 +31,9 @@ const VenueFormModal = ({
   const [formData, setFormData] = useState({
     name: '',
     location: '',
+    address: '',
+    city: '',
+    country: '',
     price: '',
     maxGuests: '',
     images: [] as string[],
@@ -57,9 +63,16 @@ const VenueFormModal = ({
 
   useEffect(() => {
     if (editingVenue) {
+      // Parse location string to extract address, city, country if available
+      const locationParts = editingVenue.location
+        .split(',')
+        .map((p) => p.trim());
       setFormData({
         name: editingVenue.name,
         location: editingVenue.location,
+        address: editingVenue.address || locationParts[0] || '',
+        city: editingVenue.city || locationParts[0] || '',
+        country: editingVenue.country || locationParts[1] || '',
         price: editingVenue.price.toString(),
         maxGuests: editingVenue.maxGuests.toString(),
         images: editingVenue.images || [],
@@ -70,6 +83,9 @@ const VenueFormModal = ({
       setFormData({
         name: '',
         location: '',
+        address: '',
+        city: '',
+        country: '',
         price: '',
         maxGuests: '',
         images: [],
@@ -106,8 +122,14 @@ const VenueFormModal = ({
     if (!formData.name.trim()) {
       newErrors.name = 'Venue name is required';
     }
-    if (!formData.location.trim()) {
-      newErrors.location = 'Location is required';
+    if (!formData.address.trim()) {
+      newErrors.address = 'Street address is required';
+    }
+    if (!formData.city.trim()) {
+      newErrors.city = 'City is required';
+    }
+    if (!formData.country.trim()) {
+      newErrors.country = 'Country is required';
     }
     if (!formData.price || parseFloat(formData.price) <= 0) {
       newErrors.price = 'Valid price is required';
@@ -140,9 +162,15 @@ const VenueFormModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      // Build location string from address, city, country
+      const locationString = `${formData.city}, ${formData.country}`;
+
       onSave({
         name: formData.name,
-        location: formData.location,
+        location: locationString,
+        address: formData.address,
+        city: formData.city,
+        country: formData.country,
         price: parseFloat(formData.price),
         maxGuests: parseInt(formData.maxGuests),
         rating: editingVenue?.rating || 0,
@@ -221,25 +249,72 @@ const VenueFormModal = ({
 
             <div>
               <label
-                htmlFor="venue-location"
+                htmlFor="venue-address"
                 className="block text-sm font-medium text-holidaze-gray mb-2">
-                Location *
+                Street Address *
               </label>
               <input
                 type="text"
-                id="venue-location"
-                value={formData.location}
+                id="venue-address"
+                value={formData.address}
                 onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
+                  setFormData({ ...formData, address: e.target.value })
                 }
                 className={`w-full py-3 px-4 border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
-                  errors.location ? 'border-red-300' : 'border-holidaze-border'
+                  errors.address ? 'border-red-300' : 'border-holidaze-border'
                 }`}
-                placeholder="e.g., Malibu, California"
+                placeholder="e.g., 123 Ocean Drive"
               />
-              {errors.location && (
-                <p className="text-sm text-red-600 mt-1">{errors.location}</p>
+              {errors.address && (
+                <p className="text-sm text-red-600 mt-1">{errors.address}</p>
               )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="venue-city"
+                  className="block text-sm font-medium text-holidaze-gray mb-2">
+                  City *
+                </label>
+                <input
+                  type="text"
+                  id="venue-city"
+                  value={formData.city}
+                  onChange={(e) =>
+                    setFormData({ ...formData, city: e.target.value })
+                  }
+                  className={`w-full py-3 px-4 border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                    errors.city ? 'border-red-300' : 'border-holidaze-border'
+                  }`}
+                  placeholder="e.g., Malibu"
+                />
+                {errors.city && (
+                  <p className="text-sm text-red-600 mt-1">{errors.city}</p>
+                )}
+              </div>
+              <div>
+                <label
+                  htmlFor="venue-country"
+                  className="block text-sm font-medium text-holidaze-gray mb-2">
+                  Country *
+                </label>
+                <input
+                  type="text"
+                  id="venue-country"
+                  value={formData.country}
+                  onChange={(e) =>
+                    setFormData({ ...formData, country: e.target.value })
+                  }
+                  className={`w-full py-3 px-4 border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                    errors.country ? 'border-red-300' : 'border-holidaze-border'
+                  }`}
+                  placeholder="e.g., United States"
+                />
+                {errors.country && (
+                  <p className="text-sm text-red-600 mt-1">{errors.country}</p>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -305,9 +380,13 @@ const VenueFormModal = ({
               {/* URL inputs */}
               <div className="space-y-3">
                 {formData.images.map((img, index) => (
-                  <div key={index} className="flex items-start gap-3">
+                  <div
+                    key={img || `image-input-${index}`}
+                    className="flex items-start gap-3">
                     <div className="flex-1">
-                      <label htmlFor={`venue-image-${index}`} className="sr-only">
+                      <label
+                        htmlFor={`venue-image-${index}`}
+                        className="sr-only">
                         Image URL {index + 1}
                       </label>
                       <input

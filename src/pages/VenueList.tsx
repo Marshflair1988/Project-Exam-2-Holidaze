@@ -309,8 +309,8 @@ const VenueList = () => {
                   : `Found ${filteredVenues.length} of ${venues.length} venues`}
                 {!isLoading && displayedVenues.length > 0 && (
                   <span className="ml-2">
-                    (Showing {displayedVenues.length} of{' '}
-                    {filteredVenues.length})
+                    (Showing {displayedVenues.length} of {filteredVenues.length}
+                    )
                   </span>
                 )}
               </p>
@@ -480,15 +480,13 @@ const VenueList = () => {
                         )}
                         {venue.amenities && venue.amenities.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-3">
-                            {venue.amenities
-                              .slice(0, 3)
-                              .map((amenity, index) => (
-                                <span
-                                  key={index}
-                                  className="px-2 py-1 bg-gray-50 text-xs text-holidaze-gray rounded border border-holidaze-border">
-                                  {amenity}
-                                </span>
-                              ))}
+                            {venue.amenities.slice(0, 3).map((amenity) => (
+                              <span
+                                key={amenity}
+                                className="px-2 py-1 bg-gray-50 text-xs text-holidaze-gray rounded border border-holidaze-border">
+                                {amenity}
+                              </span>
+                            ))}
                             {venue.amenities.length > 3 && (
                               <span className="px-2 py-1 bg-gray-50 text-xs text-holidaze-gray rounded border border-holidaze-border">
                                 +{venue.amenities.length - 3} more

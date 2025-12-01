@@ -19,6 +19,9 @@ interface Venue {
   id: string;
   name: string;
   location: string;
+  address?: string;
+  city?: string;
+  country?: string;
   price: number;
   maxGuests: number;
   rating: number;
@@ -123,6 +126,9 @@ const VenueManagerDashboard = () => {
       id: venue.id,
       name: venue.name,
       location: locationString,
+      address: venue.location?.address,
+      city: venue.location?.city,
+      country: venue.location?.country,
       price: venue.price || 0,
       maxGuests: venue.maxGuests || 0,
       rating: venue.rating || 0,
@@ -445,10 +451,18 @@ const VenueManagerDashboard = () => {
         );
       }
 
-      // Parse location - try to extract city and country
-      const locationParts = venueData.location.split(',').map((p) => p.trim());
-      const city = locationParts[0] || venueData.location;
-      const country = locationParts[1] || venueData.location;
+      // Use address, city, country from venueData if available, otherwise parse from location string
+      const address =
+        venueData.address ||
+        venueData.location.split(',')[0]?.trim() ||
+        venueData.location.trim();
+      const city =
+        venueData.city || venueData.location.split(',')[0]?.trim() || '';
+      const country =
+        venueData.country ||
+        venueData.location.split(',')[1]?.trim() ||
+        venueData.location.split(',')[0]?.trim() ||
+        '';
 
       const apiData: Record<string, unknown> = {
         name: venueData.name.trim(),
@@ -460,10 +474,10 @@ const VenueManagerDashboard = () => {
         price: Number(venueData.price),
         maxGuests: Number(venueData.maxGuests),
         location: {
-          address: venueData.location.trim(),
-          city: city.trim(),
+          address: address,
+          city: city,
           zip: '',
-          country: country.trim(),
+          country: country,
           continent: '',
           lat: 0,
           lng: 0,

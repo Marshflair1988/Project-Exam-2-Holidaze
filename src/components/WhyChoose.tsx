@@ -1,18 +1,18 @@
 const features = [
   {
-    icon: '🔒', /*Icon from https://emojipedia.org/*/
+    icon: '🔒' /*Icon from https://emojipedia.org/*/,
     title: 'Secure Booking',
     description:
       'Your payments and personal information are always protected with our secure booking system.',
   },
   {
-    icon: '🎧', /*Icon from https://emojipedia.org/*/
+    icon: '🎧' /*Icon from https://emojipedia.org/*/,
     title: '24/7 Support',
     description:
       'Get help whenever you need it with our round the clock customer support team.',
   },
   {
-    icon: '⭐', /*Icon from https://emojipedia.org/*/
+    icon: '⭐' /*Icon from https://emojipedia.org/*/,
     title: 'Verified Reviews',
     description:
       'Read authentic reviews from real guests to make informed booking decisions.',
@@ -32,9 +32,9 @@ const WhyChoose = () => {
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <div
-              key={index}
+              key={feature.title}
               className="text-center flex flex-col items-center gap-5">
               <div className="w-20 h-20 rounded-full border-2 border-holidaze-border flex items-center justify-center bg-white">
                 <span className="text-[32px]">{feature.icon}</span>
