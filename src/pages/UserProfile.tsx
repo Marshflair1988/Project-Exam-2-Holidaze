@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BookingFormModal from '../components/BookingFormModal';
+import AvatarUpdateModal from '../components/AvatarUpdateModal';
 import {
   profilesApi,
   bookingsApi,
@@ -46,6 +47,7 @@ const UserProfile = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [username, setUsername] = useState<string>('');
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // Get username from stored user data
@@ -491,60 +493,23 @@ const UserProfile = () => {
     }
   };
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleAvatarUpdated = (newAvatar: string) => {
+    // Update local state
+    setProfileData({
+      ...profileData,
+      avatar: newAvatar,
+    });
 
-    try {
-      // Read file as data URL for immediate preview
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const dataUrl = reader.result as string;
-
-        // Update local state for immediate UI feedback
-        setProfileData({
-          ...profileData,
-          avatar: dataUrl,
-        });
-
-        // Save to API
-        // Note: The API expects avatar as { url: string, alt?: string }
-        // If dataUrl is a base64 string, we'll use it as the URL
-        // In production, you'd typically upload to a service first
-        try {
-          await profilesApi.updateProfile({
-            avatar: {
-              url: dataUrl,
-              alt: profileData.name || 'Profile avatar',
-            },
-          });
-
-          // Update user data in localStorage
-          const userData = getUserData();
-          if (userData) {
-            setUserData({
-              ...userData,
-              avatar: {
-                url: dataUrl,
-                alt: profileData.name || 'Profile avatar',
-              },
-            });
-          }
-        } catch (err) {
-          alert('Failed to save avatar. Please try again.');
-          // Revert to previous avatar on error
-          const userData = getUserData();
-          if (userData?.avatar?.url) {
-            setProfileData({
-              ...profileData,
-              avatar: userData.avatar.url,
-            });
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      alert('Failed to read image file. Please try again.');
+    // Update user data in localStorage
+    const userData = getUserData();
+    if (userData) {
+      setUserData({
+        ...userData,
+        avatar: {
+          url: newAvatar,
+          alt: profileData.name || 'Profile avatar',
+        },
+      });
     }
   };
 
@@ -761,34 +726,40 @@ const UserProfile = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 mb-8">
-                    <div className="flex flex-col items-center sm:items-start">
-                      <div className="relative mb-4">
-                        <img
-                          src={profileData.avatar}
-                          alt="Profile"
-                          className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-holidaze-border"
-                        />
-                        <label
-                          htmlFor="user-avatar-upload"
-                          className="absolute bottom-0 right-0 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-holidaze-gray transition-colors"
-                          title="Change avatar">
-                          <span className="text-sm">📷</span>
-                          <input
-                            type="file"
-                            id="user-avatar-upload"
-                            accept="image/*"
-                            onChange={handleAvatarChange}
-                            className="hidden"
-                          />
-                        </label>
+                  <div className="space-y-6 mb-8">
+                    <div className="bg-gray-50 border border-holidaze-border rounded-lg p-6">
+                      <label className="block text-sm font-semibold text-holidaze-gray mb-4">
+                        Profile Picture
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+                        <div className="flex-shrink-0">
+                          <div className="relative">
+                            <img
+                              src={profileData.avatar}
+                              alt="Profile"
+                              className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-[3px] border-white shadow-md"
+                              onError={(e) => {
+                                e.currentTarget.src =
+                                  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop';
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex-1 flex flex-col items-center sm:items-start">
+                          <button
+                            type="button"
+                            onClick={() => setIsAvatarModalOpen(true)}
+                            className="py-2.5 px-5 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
+                            Update Avatar
+                          </button>
+                          <p className="text-xs text-holidaze-light-gray mt-3 text-center sm:text-left">
+                            Click to update your profile picture with an image
+                            URL
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-sm text-holidaze-light-gray text-center sm:text-left">
-                        Click the camera icon to update your profile picture
-                      </p>
                     </div>
-
-                    <div className="flex-1 space-y-4">
+                    <div className="space-y-4">
                       <div>
                         <label
                           htmlFor="profile-name"
@@ -889,6 +860,15 @@ const UserProfile = () => {
           isEditMode={true}
         />
       )}
+
+      {/* Avatar Update Modal */}
+      <AvatarUpdateModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        currentAvatar={profileData.avatar}
+        userName={profileData.name}
+        onAvatarUpdated={handleAvatarUpdated}
+      />
     </div>
   );
 };

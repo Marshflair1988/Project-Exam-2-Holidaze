@@ -4,7 +4,9 @@ const API_BASE_URL =
 const API_KEY = import.meta.env.VITE_NOROFF_API_KEY;
 
 if (!API_KEY) {
-  console.warn('⚠️ VITE_NOROFF_API_KEY is not set in environment variables. API calls will fail.');
+  console.warn(
+    '⚠️ VITE_NOROFF_API_KEY is not set in environment variables. API calls will fail.'
+  );
 }
 
 export interface RegisterData {
@@ -113,7 +115,6 @@ const apiCall = async <T>(
     ...options.headers,
   };
 
-
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers,
@@ -127,6 +128,14 @@ const apiCall = async <T>(
       // If response is not JSON, use empty object
     }
 
+    // Log full error details for debugging
+    console.error('API Error:', {
+      status: response.status,
+      statusText: response.statusText,
+      endpoint,
+      errorData,
+    });
+
     // Handle different error response formats
     const errors = errorData.errors as
       | Array<{ message?: string; field?: string }>
@@ -136,7 +145,6 @@ const apiCall = async <T>(
       (errorData.message as string) ||
       (errorData.statusCode as string) ||
       `API Error: ${response.statusText}`;
-
 
     throw new Error(errorMessage);
   }
@@ -322,15 +330,22 @@ export const profilesApi = {
     return apiCall<unknown>(`/holidaze/profiles/${name}`);
   },
 
-  updateProfile: async (data: {
-    name?: string;
-    email?: string;
-    bio?: string;
-    avatar?: { url: string; alt?: string };
-    banner?: { url: string; alt?: string };
-    venueManager?: boolean;
-  }): Promise<ApiResponse<unknown>> => {
-    return apiCall<unknown>('/holidaze/profiles', {
+  updateProfile: async (
+    data: {
+      name?: string;
+      email?: string;
+      bio?: string;
+      avatar?: { url: string; alt?: string };
+      banner?: { url: string; alt?: string };
+      venueManager?: boolean;
+    },
+    profileName?: string
+  ): Promise<ApiResponse<unknown>> => {
+    // Try /holidaze/profiles/:name first if name is provided, otherwise use /auth/profile
+    const endpoint = profileName
+      ? `/holidaze/profiles/${profileName}`
+      : '/auth/profile';
+    return apiCall<unknown>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -356,8 +371,12 @@ export const bookingsApi = {
   },
 
   // Get bookings for a specific profile/user
-  getByProfile: async (profileName: string): Promise<ApiResponse<unknown[]>> => {
-    return apiCall<unknown[]>(`/holidaze/profiles/${profileName}/bookings?_venue=true`);
+  getByProfile: async (
+    profileName: string
+  ): Promise<ApiResponse<unknown[]>> => {
+    return apiCall<unknown[]>(
+      `/holidaze/profiles/${profileName}/bookings?_venue=true`
+    );
   },
 
   // Create a new booking

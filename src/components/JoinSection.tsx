@@ -59,7 +59,7 @@ const JoinSection = () => {
             <button
               onClick={() => setIsUserRegisterOpen(true)}
               className="py-3 sm:py-3.5 px-6 sm:px-8 text-sm sm:text-base font-medium rounded cursor-pointer transition-all border-none w-full mt-2 bg-[#0369a1] text-white hover:opacity-90">
-              Sign Up as Customer
+              Sign Up as a Traveler
             </button>
           </div>
           <div className="bg-white border border-holidaze-border rounded-lg p-6 sm:p-8 lg:p-10 flex flex-col items-center text-center gap-4 sm:gap-6">

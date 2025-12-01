@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import VenueFormModal from '../components/VenueFormModal';
+import AvatarUpdateModal from '../components/AvatarUpdateModal';
 import {
   getAccessToken,
   getUserData,
   setUserData,
+  removeAccessToken,
+  removeUserData,
   venuesApi,
   profilesApi,
   bookingsApi,
@@ -181,6 +184,8 @@ const VenueManagerDashboard = () => {
       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop',
   });
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch profile data from API
   useEffect(() => {
@@ -242,7 +247,7 @@ const VenueManagerDashboard = () => {
     try {
       // Use current venues state if available, otherwise fetch from API
       let venueIds: string[] = [];
-      
+
       if (venues.length > 0) {
         // Use existing venues
         venueIds = venues.map((v) => v.id);
@@ -294,7 +299,7 @@ const VenueManagerDashboard = () => {
                   (checkOutDate.getTime() - checkInDate.getTime()) /
                     (1000 * 60 * 60 * 24)
                 );
-                
+
                 const venuePrice = venue.price || 0;
                 const totalPrice = venuePrice * nights;
 
@@ -367,7 +372,7 @@ const VenueManagerDashboard = () => {
           .map((venue) => transformVenueData(venue))
           .filter((venue): venue is Venue => venue !== null);
         setVenues(transformedVenues);
-        
+
         // Refresh bookings after venues are updated
         await refreshBookings();
       }
@@ -467,7 +472,6 @@ const VenueManagerDashboard = () => {
         apiData.rating = venueData.rating;
       }
 
-
       if (editingVenue) {
         // Update existing venue
         const response = await venuesApi.update(editingVenue.id, apiData);
@@ -537,54 +541,48 @@ const VenueManagerDashboard = () => {
     }
   };
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleAvatarUpdated = (newAvatar: string) => {
+    // Update local state
+    setProfileData({
+      ...profileData,
+      avatar: newAvatar,
+    });
+
+    // Update user data in localStorage
+    const userData = getUserData();
+    if (userData) {
+      setUserData({
+        ...userData,
+        avatar: {
+          url: newAvatar,
+          alt: profileData.name || 'Profile avatar',
+        },
+      });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account? This action cannot be undone and will permanently delete your profile and all associated data.'
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
 
     try {
-      // Read file as data URL for immediate preview
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const dataUrl = reader.result as string;
-        
-        // Update local state for immediate UI feedback
-        setProfileData({
-          ...profileData,
-          avatar: dataUrl,
-        });
-
-        // Save to API
-        try {
-          await profilesApi.updateProfile({
-            avatar: {
-              url: dataUrl,
-              alt: profileData.name || 'Profile avatar',
-            },
-          });
-          
-          // Update user data in localStorage
-          const userData = getUserData();
-          if (userData) {
-            setUserData({
-              ...userData,
-              avatar: { url: dataUrl, alt: profileData.name || 'Profile avatar' },
-            });
-          }
-        } catch (err) {
-          alert('Failed to save avatar. Please try again.');
-          // Revert to previous avatar on error
-          const userData = getUserData();
-          if (userData?.avatar?.url) {
-            setProfileData({
-              ...profileData,
-              avatar: userData.avatar.url,
-            });
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      alert('Failed to read image file. Please try again.');
+      await profilesApi.deleteProfile();
+      // Clear local storage
+      removeAccessToken();
+      removeUserData();
+      // Redirect to home page
+      navigate('/');
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      alert(
+        error.message || 'Failed to delete account. Please try again later.'
+      );
+      setIsDeleting(false);
     }
   };
 
@@ -862,74 +860,99 @@ const VenueManagerDashboard = () => {
               <div className="bg-white border border-holidaze-border rounded-lg p-6 sm:p-8 max-w-2xl">
                 {isLoadingProfile ? (
                   <div className="text-center py-8">
-                    <p className="text-holidaze-light-gray">Loading profile...</p>
-                  </div>
-                ) : (
-                <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 mb-8">
-                  <div className="flex flex-col items-center sm:items-start">
-                    <div className="relative mb-4">
-                      <img
-                        src={profileData.avatar}
-                        alt="Profile"
-                        className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-holidaze-border"
-                      />
-                      <label
-                        htmlFor="avatar-upload"
-                        className="absolute bottom-0 right-0 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-holidaze-gray transition-colors"
-                        title="Change avatar">
-                        <span className="text-sm">📷</span>
-                        <input
-                          type="file"
-                          id="avatar-upload"
-                          accept="image/*"
-                          onChange={handleAvatarChange}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                    <p className="text-sm text-holidaze-light-gray text-center sm:text-left">
-                      Click the camera icon to update your profile picture
+                    <p className="text-holidaze-light-gray">
+                      Loading profile...
                     </p>
                   </div>
+                ) : (
+                  <div className="space-y-6 mb-8">
+                    <div className="bg-gray-50 border border-holidaze-border rounded-lg p-6">
+                      <label className="block text-sm font-semibold text-holidaze-gray mb-4">
+                        Profile Picture
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+                        <div className="flex-shrink-0">
+                          <div className="relative">
+                            <img
+                              src={profileData.avatar}
+                              alt="Profile"
+                              className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-[3px] border-white shadow-md"
+                              onError={(e) => {
+                                e.currentTarget.src =
+                                  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop';
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex-1 flex flex-col items-center sm:items-start">
+                          <button
+                            type="button"
+                            onClick={() => setIsAvatarModalOpen(true)}
+                            className="py-2.5 px-5 bg-[#0369a1] text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:opacity-90">
+                            Update Avatar
+                          </button>
+                          <p className="text-xs text-holidaze-light-gray mt-3 text-center sm:text-left">
+                            Click to update your profile picture with an image
+                            URL
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-holidaze-gray mb-2">
+                          Name
+                        </label>
+                        <input
+                          type="text"
+                          value={profileData.name}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              name: e.target.value,
+                            })
+                          }
+                          className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-holidaze-gray mb-2">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          value={profileData.email}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              email: e.target.value,
+                            })
+                          }
+                          className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
+                      </div>
+                      <button className="py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
+                        Save Changes
+                      </button>
+                    </div>
 
-                  <div className="flex-1 space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-holidaze-gray mb-2">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        value={profileData.name}
-                        onChange={(e) =>
-                          setProfileData({
-                            ...profileData,
-                            name: e.target.value,
-                          })
-                        }
-                        className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                      />
+                    {/* Delete Account Section */}
+                    <div className="mt-8 pt-8 border-t border-holidaze-border">
+                      <h3 className="text-lg font-semibold text-holidaze-gray m-0 mb-2">
+                        Danger Zone
+                      </h3>
+                      <p className="text-sm text-holidaze-light-gray m-0 mb-4">
+                        Once you delete your account, there is no going back.
+                        Please be certain.
+                      </p>
+                      <button
+                        onClick={handleDeleteAccount}
+                        disabled={isDeleting}
+                        className="py-2.5 px-5 bg-red-600 text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                        {isDeleting ? 'Deleting Account...' : 'Delete Account'}
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-holidaze-gray mb-2">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={profileData.email}
-                        onChange={(e) =>
-                          setProfileData({
-                            ...profileData,
-                            email: e.target.value,
-                          })
-                        }
-                        className="w-full py-3 px-4 border border-holidaze-border rounded text-[15px] bg-white text-holidaze-gray placeholder:text-holidaze-lighter-gray focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                      />
-                    </div>
-                    <button className="py-2.5 px-5 bg-black text-white border-none rounded text-[15px] font-medium cursor-pointer transition-all hover:bg-holidaze-gray">
-                      Save Changes
-                    </button>
                   </div>
-                </div>
                 )}
               </div>
             </div>
@@ -947,6 +970,15 @@ const VenueManagerDashboard = () => {
         }}
         onSave={handleSaveVenue}
         editingVenue={editingVenue}
+      />
+
+      {/* Avatar Update Modal */}
+      <AvatarUpdateModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        currentAvatar={profileData.avatar}
+        userName={profileData.name}
+        onAvatarUpdated={handleAvatarUpdated}
       />
     </div>
   );
