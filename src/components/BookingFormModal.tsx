@@ -186,7 +186,7 @@ const BookingFormModal = ({
                 <option value="">Choose a venue...</option>
                 {availableVenues.map((venue) => (
                   <option key={venue.id} value={venue.id}>
-                    {venue.name} - {venue.location} (${venue.price}/night)
+                    {venue.name} - {venue.location} ({venue.price} kr/night)
                   </option>
                 ))}
               </select>
@@ -331,7 +331,7 @@ const BookingFormModal = ({
                       )}
                     </p>
                     <p className="text-sm text-holidaze-light-gray m-0">
-                      Price per night: ${selectedVenueData.price}
+                      Price per night: {selectedVenueData.price} kr
                     </p>
                   </div>
                   <div className="text-right">
@@ -339,7 +339,7 @@ const BookingFormModal = ({
                       Total Price
                     </p>
                     <p className="text-2xl font-bold text-holidaze-gray m-0">
-                      ${calculateTotalPrice()}
+                      {calculateTotalPrice()} kr
                     </p>
                   </div>
                 </div>

@@ -11,12 +11,14 @@ interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSwitchToRegister?: () => void;
+  message?: string;
 }
 
 const LoginModal = ({
   isOpen,
   onClose,
   onSwitchToRegister,
+  message,
 }: LoginModalProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -127,6 +129,11 @@ const LoginModal = ({
         </div>
 
         <div className="p-6 sm:p-8">
+          {message && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-700 text-sm text-center">
+              {message}
+            </div>
+          )}
           <p className="text-base text-holidaze-light-gray mb-6 text-center">
             Sign in to your account
           </p>

@@ -107,7 +107,7 @@ const BookingConfirmationModal = ({
                       Total Price:
                     </span>
                     <span className="text-xl font-bold text-holidaze-gray">
-                      ${bookingData.totalPrice}
+                      {bookingData.totalPrice} kr
                     </span>
                   </div>
                 </div>

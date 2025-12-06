@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "validate:lighthouse": "npm run build && npm run preview & sleep 3 && lighthouse http://localhost:4173 --output html --output-path ./lighthouse-report.html --view",
+    "validate:lighthouse:ci": "npm run build && lighthouse http://localhost:4173 --output html --output-path ./lighthouse-report.html --only-categories=accessibility,performance"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -29,6 +31,7 @@
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "lighthouse": "^11.7.1"
   }
 }

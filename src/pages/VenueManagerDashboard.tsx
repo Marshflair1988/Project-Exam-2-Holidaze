@@ -743,7 +743,7 @@ const VenueManagerDashboard = () => {
                           </div>
                           <div className="flex items-baseline">
                             <span className="text-[22px] font-bold text-holidaze-gray">
-                              ${venue.price}
+                              {venue.price} kr
                             </span>
                             <span className="text-sm text-holidaze-light-gray ml-1">
                               / night
@@ -862,7 +862,7 @@ const VenueManagerDashboard = () => {
                               Total Price
                             </p>
                             <p className="text-2xl font-bold text-holidaze-gray m-0">
-                              ${booking.totalPrice}
+                              {booking.totalPrice} kr
                             </p>
                           </div>
                         </div>

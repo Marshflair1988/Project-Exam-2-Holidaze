@@ -322,7 +322,7 @@ const VenueFormModal = ({
                 <label
                   htmlFor="venue-price"
                   className="block text-sm font-medium text-holidaze-gray mb-2">
-                  Price per Night ($) *
+                  Price per Night (kr) *
                 </label>
                 <input
                   type="number"

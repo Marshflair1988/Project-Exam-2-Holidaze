@@ -162,7 +162,7 @@ const FeaturedVenues = () => {
                     </div>
                     <div className="flex items-baseline">
                       <span className="text-[22px] font-bold text-holidaze-gray">
-                        ${venue.price}
+                        {venue.price} kr
                       </span>
                       <span className="text-sm text-holidaze-light-gray ml-1">
                         / night

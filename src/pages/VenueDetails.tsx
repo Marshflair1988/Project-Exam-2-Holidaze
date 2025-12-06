@@ -6,7 +6,8 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BookingFormModal from '../components/BookingFormModal';
 import BookingConfirmationModal from '../components/BookingConfirmationModal';
-import { venuesApi, bookingsApi } from '../services/api';
+import LoginModal from '../components/LoginModal';
+import { venuesApi, bookingsApi, getAccessToken } from '../services/api';
 
 interface VenueData {
   id: string;
@@ -48,6 +49,7 @@ const VenueDetails = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkInDate, setCheckInDate] = useState<Date | null>(null);
@@ -255,6 +257,14 @@ const VenueDetails = () => {
   }, [id]);
 
   const handleBookNow = () => {
+    // Check if user is logged in
+    const token = getAccessToken();
+    if (!token) {
+      // User is not logged in, show login modal
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     if (!checkInDate || !checkOutDate) {
       // If dates not selected, alert user
       alert('Please select both check-in and check-out dates');
@@ -702,7 +712,7 @@ const VenueDetails = () => {
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-holidaze-gray">
-                          ${room.price}
+                          {room.price} kr
                         </div>
                         <div className="text-sm text-holidaze-light-gray">
                           per night
@@ -858,6 +868,13 @@ const VenueDetails = () => {
         isOpen={isConfirmationOpen}
         onClose={() => setIsConfirmationOpen(false)}
         bookingData={confirmedBooking}
+      />
+
+      {/* Login Modal - shown when user tries to book without being logged in */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        message="Please log in to make a booking"
       />
     </div>
   );

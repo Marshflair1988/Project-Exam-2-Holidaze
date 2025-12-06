@@ -677,7 +677,7 @@ const UserProfile = () => {
                                   Total Price
                                 </p>
                                 <p className="text-2xl font-bold text-holidaze-gray m-0">
-                                  ${booking.totalPrice}
+                                  {booking.totalPrice} kr
                                 </p>
                               </div>
                               {booking.status !== 'cancelled' && (
