@@ -75,7 +75,7 @@ const Login = () => {
   return (
     <div className="w-full min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 w-full flex items-center justify-center py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white">
+      <main id="main-content" className="flex-1 w-full flex items-center justify-center py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white">
         <div className="w-full max-w-[450px]">
           <div className="text-center mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-holidaze-gray m-0 tracking-tight">

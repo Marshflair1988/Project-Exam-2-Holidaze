@@ -152,14 +152,18 @@ const BookingFormModal = ({
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 z-[2000] flex items-center justify-center p-4"
-      onClick={handleBackdropClick}>
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="booking-modal-title">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-holidaze-border px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-holidaze-gray m-0">
+          <h2 id="booking-modal-title" className="text-2xl font-bold text-holidaze-gray m-0">
             Confirm Booking
           </h2>
           <button
             onClick={onClose}
+            aria-label="Close booking modal"
             className="text-2xl text-holidaze-light-gray hover:text-holidaze-gray transition-colors cursor-pointer bg-transparent border-none">
             ×
           </button>
@@ -200,9 +204,8 @@ const BookingFormModal = ({
                 <div className="flex gap-4">
                   <img
                     src={selectedVenueData.images[0]}
-                    alt=""
+                    alt={`${selectedVenueData.name} - ${selectedVenueData.location}`}
                     className="w-24 h-24 object-cover rounded"
-                    aria-hidden="true"
                   />
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-holidaze-gray m-0 mb-1">

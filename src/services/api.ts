@@ -3,12 +3,6 @@ const API_BASE_URL =
   import.meta.env.VITE_NOROFF_API_BASE_URL || 'https://v2.api.noroff.dev';
 const API_KEY = import.meta.env.VITE_NOROFF_API_KEY;
 
-if (!API_KEY) {
-  console.warn(
-    '⚠️ VITE_NOROFF_API_KEY is not set in environment variables. API calls will fail.'
-  );
-}
-
 export interface RegisterData {
   name: string;
   email: string;
@@ -127,14 +121,6 @@ const apiCall = async <T>(
     } catch {
       // If response is not JSON, use empty object
     }
-
-    // Log full error details for debugging
-    console.error('API Error:', {
-      status: response.status,
-      statusText: response.statusText,
-      endpoint,
-      errorData,
-    });
 
     // Handle different error response formats
     const errors = errorData.errors as

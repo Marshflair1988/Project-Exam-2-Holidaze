@@ -419,6 +419,7 @@ const VenueFormModal = ({
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(index)}
+                      aria-label={`Remove image ${index + 1}`}
                       className="mt-1 py-2.5 px-4 bg-white text-red-600 border border-red-200 rounded text-sm font-medium cursor-pointer transition-all hover:bg-red-50">
                       Remove
                     </button>

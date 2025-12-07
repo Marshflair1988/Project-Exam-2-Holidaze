@@ -88,7 +88,6 @@ const FeaturedVenues = () => {
           setTopRatedVenues(selected);
         }
       } catch (err: unknown) {
-        console.error('❌ Error fetching top rated venues:', err);
         // Set empty array on error so UI shows "No venues available" message
         setTopRatedVenues([]);
       } finally {
@@ -140,10 +139,9 @@ const FeaturedVenues = () => {
                       venue.images[0] ||
                       'https://via.placeholder.com/600x400?text=No+Image'
                     }
-                    alt=""
+                    alt={`${venue.name} located in ${venue.location}`}
                     className="w-full h-full object-cover"
                     loading="lazy"
-                    aria-hidden="true"
                   />
                 </div>
                 <div className="p-5 flex flex-col gap-3 flex-1">

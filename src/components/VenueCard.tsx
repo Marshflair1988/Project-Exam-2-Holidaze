@@ -31,10 +31,9 @@ const VenueCard = ({ venue }: VenueCardProps) => {
       <div className="w-full aspect-[16/10] relative overflow-hidden">
         <img
           src={getImageUrl(venue.image)}
-          alt=""
+          alt={`${venue.title} located in ${venue.location}`}
           className="w-full h-full object-cover"
           loading="lazy"
-          aria-hidden="true"
         />
       </div>
       <div className="p-5 flex flex-col gap-3 flex-1">

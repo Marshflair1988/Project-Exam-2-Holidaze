@@ -170,14 +170,18 @@ const VenueManagerRegisterModal = ({
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
-      onClick={handleBackdropClick}>
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="venue-manager-register-modal-title">
       <div className="bg-white rounded-lg shadow-xl max-w-[450px] w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-holidaze-border px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-holidaze-gray m-0">
+          <h2 id="venue-manager-register-modal-title" className="text-2xl font-bold text-holidaze-gray m-0">
             Venue Manager Registration
           </h2>
           <button
             onClick={onClose}
+            aria-label="Close venue manager registration modal"
             className="text-holidaze-light-gray hover:text-holidaze-gray text-2xl leading-none bg-transparent border-none cursor-pointer p-0 w-8 h-8 flex items-center justify-center">
             ×
           </button>

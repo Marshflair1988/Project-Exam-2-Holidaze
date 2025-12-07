@@ -558,7 +558,7 @@ const UserProfile = () => {
   return (
     <div className="w-full min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 w-full bg-white">
+      <main id="main-content" className="flex-1 w-full bg-white">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
           {/* Profile Header */}
           <div className="mb-8">

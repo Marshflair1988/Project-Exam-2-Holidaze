@@ -50,7 +50,10 @@ const BookingConfirmationModal = ({
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 z-[2000] flex items-center justify-center p-4"
-      onClick={handleBackdropClick}>
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirmation-modal-title">
       <div className="bg-white rounded-lg max-w-lg w-full">
         <div className="p-6 sm:p-8">
           {/* Success Icon */}
@@ -62,7 +65,7 @@ const BookingConfirmationModal = ({
 
           {/* Success Message */}
           <div className="text-center mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-holidaze-gray m-0 mb-2">
+            <h2 id="confirmation-modal-title" className="text-2xl sm:text-3xl font-bold text-holidaze-gray m-0 mb-2">
               Booking Confirmed!
             </h2>
             <p className="text-base text-holidaze-light-gray m-0">
@@ -75,9 +78,8 @@ const BookingConfirmationModal = ({
             <div className="flex gap-4 mb-4">
               <img
                 src={bookingData.venueImage}
-                alt=""
+                alt={`${bookingData.venueName} - Booking confirmation`}
                 className="w-24 h-24 object-cover rounded"
-                aria-hidden="true"
               />
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-holidaze-gray m-0 mb-1">

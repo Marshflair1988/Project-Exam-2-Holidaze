@@ -409,7 +409,7 @@ const VenueDetails = () => {
     return (
       <div className="w-full min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 w-full flex items-center justify-center py-20">
+        <main id="main-content" className="flex-1 w-full flex items-center justify-center py-20">
           <div className="text-center">
             <p className="text-lg text-holidaze-light-gray">Loading venue...</p>
           </div>
@@ -424,7 +424,7 @@ const VenueDetails = () => {
     return (
       <div className="w-full min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 w-full flex items-center justify-center py-20">
+        <main id="main-content" className="flex-1 w-full flex items-center justify-center py-20">
           <div className="text-center">
             <p className="text-lg text-red-600 mb-4">
               {error || 'Venue not found'}
@@ -444,7 +444,7 @@ const VenueDetails = () => {
   return (
     <div className="w-full min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 w-full">
+      <main id="main-content" className="flex-1 w-full">
         {/* Hero Section with Image Gallery */}
         <section className="w-full bg-white">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
@@ -455,20 +455,21 @@ const VenueDetails = () => {
                   src={
                     venueData.images[selectedImage] || venueData.images[0] || ''
                   }
-                  alt=""
+                  alt={`${venueData.name} - Main view showing ${venueData.location}`}
                   className="w-full h-full object-cover"
-                  aria-hidden="true"
                 />
               </div>
             </div>
 
             {/* Thumbnail Gallery */}
             {venueData.images.length > 1 && (
-              <div className="grid grid-cols-5 gap-2 sm:gap-4 mb-6">
+              <div className="grid grid-cols-5 gap-2 sm:gap-4 mb-6" role="group" aria-label="Venue image gallery">
                 {venueData.images.map((image, index) => (
                   <button
                     key={image || `image-${index}`}
                     onClick={() => setSelectedImage(index)}
+                    aria-label={`View image ${index + 1} of ${venueData.images.length} for ${venueData.name}`}
+                    aria-pressed={selectedImage === index}
                     className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                       selectedImage === index
                         ? 'border-black scale-105'
@@ -476,9 +477,8 @@ const VenueDetails = () => {
                     }`}>
                     <img
                       src={image}
-                      alt=""
+                      alt={`${venueData.name} - Image ${index + 1}`}
                       className="w-full h-full object-cover"
-                      aria-hidden="true"
                     />
                   </button>
                 ))}
@@ -677,6 +677,7 @@ const VenueDetails = () => {
                 <button
                   onClick={handleBookNow}
                   disabled={!checkInDate || !checkOutDate}
+                  aria-label={checkInDate && checkOutDate ? `Book ${venueData.name} for selected dates` : 'Select check-in and check-out dates to book'}
                   className={`py-3 px-8 border-none rounded text-base sm:text-lg font-medium cursor-pointer transition-all whitespace-nowrap ${
                     checkInDate && checkOutDate
                       ? 'bg-[#0369a1] text-white hover:opacity-90'

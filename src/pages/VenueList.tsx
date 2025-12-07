@@ -289,7 +289,7 @@ const VenueList = () => {
   return (
     <div className="w-full min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 w-full bg-white">
+      <main id="main-content" className="flex-1 w-full bg-white">
         {/* Search Bar Section */}
         <SearchBar />
 
@@ -437,10 +437,9 @@ const VenueList = () => {
                             venue.images[0] ||
                             'https://via.placeholder.com/600x400?text=No+Image'
                           }
-                          alt=""
+                          alt={`${venue.name} located in ${venue.location}`}
                           className="w-full h-full object-cover"
                           loading="lazy"
-                          aria-hidden="true"
                         />
                       </div>
                       <div className="p-5 flex flex-col flex-1">
@@ -507,6 +506,7 @@ const VenueList = () => {
                   <div className="flex justify-center mt-8">
                     <button
                       onClick={handleLoadMore}
+                      aria-label={`Load more venues. Currently showing ${venuesToShow} of ${filteredVenues.length} venues`}
                       className="py-3 px-6 sm:px-8 bg-white text-holidaze-gray border border-holidaze-border rounded text-sm sm:text-base font-medium cursor-pointer transition-all hover:bg-gray-100 hover:border-holidaze-gray">
                       Load More Venues ({filteredVenues.length - venuesToShow}{' '}
                       remaining)

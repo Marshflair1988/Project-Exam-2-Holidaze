@@ -84,8 +84,15 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full border-b border-white/20 shadow-sm sticky top-0 z-[1000] bg-[#0369a1]">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 sm:py-5">
+    <>
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10000] focus:px-4 focus:py-2 focus:bg-white focus:text-[#0369a1] focus:rounded focus:font-medium focus:shadow-lg">
+        Skip to main content
+      </a>
+      <header className="w-full border-b border-white/20 shadow-sm sticky top-0 z-[1000] bg-[#0369a1]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 sm:py-5">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link
@@ -97,7 +104,7 @@ const Header = () => {
           {/* Desktop Right Side */}
           <div className="hidden lg:flex items-center gap-4">
             {/* Navigation Links */}
-            <nav className="flex items-center gap-6">
+            <nav aria-label="Main navigation" className="flex items-center gap-6">
               <Link
                 to="/"
                 className="text-white no-underline text-[15px] font-normal hover:text-gray-100 transition-colors">
@@ -127,6 +134,9 @@ const Header = () => {
               <div className="relative user-menu-container">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  aria-label={`${user.name} menu`}
+                  aria-expanded={isUserMenuOpen}
+                  aria-haspopup="true"
                   className="flex items-center gap-3 py-2 px-3 rounded cursor-pointer transition-all hover:bg-white/20">
                   <img
                     src={
@@ -141,7 +151,10 @@ const Header = () => {
                   </span>
                 </button>
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-holidaze-border rounded-lg shadow-lg z-50">
+                  <div 
+                    role="menu"
+                    aria-label="User account menu"
+                    className="absolute right-0 mt-2 w-48 bg-white border border-holidaze-border rounded-lg shadow-lg z-50">
                     <div className="py-2">
                       <Link
                         to={
@@ -150,11 +163,14 @@ const Header = () => {
                             : '/user/profile'
                         }
                         onClick={() => setIsUserMenuOpen(false)}
+                        role="menuitem"
                         className="block px-4 py-2 text-sm text-holidaze-gray hover:bg-gray-100 no-underline">
                         {user.venueManager ? 'Dashboard' : 'My Profile'}
                       </Link>
                       <button
                         onClick={handleLogout}
+                        role="menuitem"
+                        aria-label="Log out of your account"
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-none bg-transparent cursor-pointer">
                         Logout
                       </button>
@@ -198,7 +214,10 @@ const Header = () => {
                   </span>
                 </button>
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-holidaze-border rounded-lg shadow-lg z-50">
+                  <div 
+                    role="menu"
+                    aria-label="User account menu"
+                    className="absolute right-0 mt-2 w-48 bg-white border border-holidaze-border rounded-lg shadow-lg z-50">
                     <div className="py-2">
                       <Link
                         to={
@@ -207,11 +226,14 @@ const Header = () => {
                             : '/user/profile'
                         }
                         onClick={() => setIsUserMenuOpen(false)}
+                        role="menuitem"
                         className="block px-4 py-2 text-sm text-holidaze-gray hover:bg-gray-100 no-underline">
                         {user.venueManager ? 'Dashboard' : 'My Profile'}
                       </Link>
                       <button
                         onClick={handleLogout}
+                        role="menuitem"
+                        aria-label="Log out of your account"
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-none bg-transparent cursor-pointer">
                         Logout
                       </button>
@@ -260,7 +282,7 @@ const Header = () => {
             isMenuOpen ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'
           }`}>
           <div className="flex flex-col gap-4 pb-4 border-t border-white/20 mt-4 pt-4">
-            <nav className="flex flex-col gap-4">
+            <nav aria-label="Mobile navigation" className="flex flex-col gap-4">
               <Link
                 to="/"
                 onClick={() => setIsMenuOpen(false)}
@@ -343,6 +365,7 @@ const Header = () => {
         }}
       />
     </header>
+    </>
   );
 };
 
